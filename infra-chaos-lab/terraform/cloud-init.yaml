@@ -119,7 +119,7 @@ write_files:
       PUBLIC_IPV4=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN_IMDS" http://169.254.169.254/latest/meta-data/public-ipv4 || true)
 
       echo "Public IP erkannt: $PUBLIC_IPV4"
-      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --disable metrics-server --tls-san ${PUBLIC_IPV4:-127.0.0.1} --write-kubeconfig-mode 644 --kubelet-arg fail-swap-on=false" sh -
+      curl -sfL https://raw.githubusercontent.com/k3s-io/k3s/master/install.sh | INSTALL_K3S_EXEC="--disable traefik --disable metrics-server --tls-san ${PUBLIC_IPV4:-127.0.0.1} --write-kubeconfig-mode 644 --kubelet-arg fail-swap-on=false" sh -
 
       export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
