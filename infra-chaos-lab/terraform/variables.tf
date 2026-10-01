@@ -1,5 +1,5 @@
 variable "aws_region" {
-  description = "AWS Region für das Messframework"
+  description = "AWS Region"
   type        = string
   default     = "eu-central-1"
 }
@@ -8,7 +8,7 @@ variable "instance_type" {
   description = "EC2 Instanztyp (t3.small: 2 vCPUs, 2 GB RAM, Free Tier eligible)"
   type        = string
   default     = "t3.small"
-}
+} 
 
 variable "ssh_public_key_path" {
   description = "Pfad zum lokalen SSH Public Key"

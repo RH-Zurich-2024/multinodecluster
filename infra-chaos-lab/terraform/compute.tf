@@ -1,7 +1,7 @@
 # Neuestes offizielles Ubuntu 24.04 LTS (Noble Numbat) AMI von Canonical
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Offizielle Canonical AWS Account ID
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
@@ -32,7 +32,7 @@ resource "aws_instance" "k3s_node" {
   root_block_device {
     volume_size           = var.root_volume_size
     volume_type           = "gp3"
-    delete_on_termination = true # Zwingend true fuer ephemeres Arbeiten (keine verwaisten EBS-Kosten!)
+    delete_on_termination = true
     encrypted             = true
 
     tags = {
