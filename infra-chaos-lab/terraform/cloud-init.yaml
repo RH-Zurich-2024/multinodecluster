@@ -98,6 +98,38 @@ write_files:
       prometheus-pushgateway:
         enabled: false
 
+  - path: /opt/k8s/application-baseline.yaml
+    permissions: '0644'
+    content: |
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: baseline-workload-app
+        namespace: argocd
+        finalizers:
+          - resources-finalizer.argocd.argoproj.io
+      spec:
+        project: default
+        source:
+          repoURL: 'https://github.com/Timo-source/messframework.git'
+          targetRevision: HEAD
+          path: gitops-workloads/base
+        destination:
+          server: 'https://kubernetes.default.svc'
+          namespace: workloads
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
+          retry:
+            limit: 5
+            backoff:
+              duration: 5s
+              factor: 2
+              maxDuration: 3m
+
   - path: /usr/local/bin/bootstrap-cluster.sh
     permissions: '0755'
     content: |
@@ -105,7 +137,7 @@ write_files:
       set -euo pipefail
       exec > >(tee -a /var/log/bootstrap-cluster.log) 2>&1
 
-      echo "=== [1/7] Aktiviere 4GB SSD-Swapfile fuer stabilen Betrieb ==="
+      echo "=== [1/8] Aktiviere 4GB SSD-Swapfile fuer stabilen Betrieb ==="
       if [ ! -f /swapfile ]; then
         fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
         chmod 600 /swapfile
@@ -114,7 +146,7 @@ write_files:
         echo "/swapfile none swap sw 0 0" >> /etc/fstab
       fi
 
-      echo "=== [2/7] Starte K3s Bootstrap: $(date) ==="
+      echo "=== [2/8] Starte K3s Bootstrap: $(date) ==="
       TOKEN_IMDS=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60" || true)
       PUBLIC_IPV4=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN_IMDS" http://169.254.169.254/latest/meta-data/public-ipv4 || true)
 
@@ -123,30 +155,30 @@ write_files:
 
       export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-      echo "=== [3/7] Richte Kubeconfig fuer ubuntu User ein ==="
+      echo "=== [3/8] Richte Kubeconfig fuer ubuntu User ein ==="
       mkdir -p /home/ubuntu/.kube
       cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/.kube/config
       chown -R ubuntu:ubuntu /home/ubuntu/.kube
       echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> /home/ubuntu/.bashrc
 
-      echo "=== [4/7] Warte auf K3s Node Readiness ==="
+      echo "=== [4/8] Warte auf K3s Node Readiness ==="
       until kubectl get nodes | grep -q " Ready"; do
         echo "Warte auf K3s..."
         sleep 3
       done
 
-      echo "=== [5/7] Installiere Helm v3 ==="
+      echo "=== [5/8] Installiere Helm v3 ==="
       curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
       chmod 700 /tmp/get_helm.sh
       /tmp/get_helm.sh
       rm -f /tmp/get_helm.sh
 
-      echo "=== [6/7] Erstelle Namespaces (argocd, monitoring, workloads) ==="
+      echo "=== [6/8] Erstelle Namespaces (argocd, monitoring, workloads) ==="
       kubectl create namespace argocd || true
       kubectl create namespace monitoring || true
       kubectl create namespace workloads || true
 
-      echo "=== [7/7] Installiere ArgoCD ZUERST (Prioritaet 1) ==="
+      echo "=== [7/8] Installiere ArgoCD ZUERST (Prioritaet 1) ==="
       helm repo add argo https://argoproj.github.io/argo-helm
       helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
       helm repo add grafana https://grafana.github.io/helm-charts
@@ -174,6 +206,13 @@ write_files:
         --set service.nodePort=30000 \
         --set adminPassword=admin \
         --wait --timeout 5m
+
+      echo "=== [8/8] Registriere Baseline-Applikation vollautomatisch in ArgoCD ==="
+      until kubectl get crd applications.argoproj.io >/dev/null 2>&1; do
+        echo "Warte auf ArgoCD Application CRD..."
+        sleep 2
+      done
+      kubectl apply -f /opt/k8s/application-baseline.yaml
 
       echo "=== Bootstrap erfolgreich abgeschlossen: $(date) ===" > /var/log/bootstrap-complete.log
 
