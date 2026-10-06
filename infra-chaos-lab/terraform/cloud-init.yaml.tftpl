@@ -17,118 +17,17 @@ write_files:
   - path: /opt/helm-values/values-argocd.yaml
     permissions: '0644'
     content: |
-      global:
-        logging:
-          format: json
-          level: info
-      dex:
-        enabled: false
-      notifications:
-        enabled: false
-      applicationSet:
-        enabled: false
-      server:
-        service:
-          type: NodePort
-          nodePortHttp: 30080
-          ports:
-            http: 80
-        insecure: true
-        resources:
-          requests:
-            cpu: 50m
-            memory: 128Mi
-          limits:
-            cpu: 250m
-            memory: 256Mi
-      controller:
-        metrics:
-          enabled: true
-        resources:
-          requests:
-            cpu: 100m
-            memory: 256Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi
-      repoServer:
-        metrics:
-          enabled: true
-        resources:
-          requests:
-            cpu: 50m
-            memory: 128Mi
-          limits:
-            cpu: 300m
-            memory: 384Mi
-      redis:
-        resources:
-          requests:
-            cpu: 20m
-            memory: 64Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
+${values_argocd}
 
   - path: /opt/helm-values/values-prometheus.yaml
     permissions: '0644'
     content: |
-      server:
-        retention: "24h"
-        global:
-          scrape_interval: 5s
-          scrape_timeout: 4s
-          evaluation_interval: 5s
-        service:
-          type: NodePort
-          nodePort: 30090
-        resources:
-          requests:
-            cpu: 50m
-            memory: 128Mi
-          limits:
-            cpu: 300m
-            memory: 384Mi
-      prometheus-node-exporter:
-        enabled: true
-      kube-state-metrics:
-        enabled: true
-      alertmanager:
-        enabled: false
-      prometheus-pushgateway:
-        enabled: false
+${values_prometheus}
 
   - path: /opt/k8s/application-baseline.yaml
     permissions: '0644'
     content: |
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: baseline-workload-app
-        namespace: argocd
-        finalizers:
-          - resources-finalizer.argocd.argoproj.io
-      spec:
-        project: default
-        source:
-          repoURL: 'https://github.com/Timo-source/messframework.git'
-          targetRevision: HEAD
-          path: gitops-workloads/base
-        destination:
-          server: 'https://kubernetes.default.svc'
-          namespace: workloads
-        syncPolicy:
-          automated:
-            prune: true
-            selfHeal: true
-          syncOptions:
-            - CreateNamespace=true
-          retry:
-            limit: 5
-            backoff:
-              duration: 5s
-              factor: 2
-              maxDuration: 3m
+${application_baseline}
 
   - path: /usr/local/bin/bootstrap-cluster.sh
     permissions: '0755'
@@ -151,7 +50,7 @@ write_files:
       PUBLIC_IPV4=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN_IMDS" http://169.254.169.254/latest/meta-data/public-ipv4 || true)
 
       echo "Public IP erkannt: $PUBLIC_IPV4"
-      curl -sfL https://raw.githubusercontent.com/k3s-io/k3s/master/install.sh | INSTALL_K3S_EXEC="--disable traefik --disable metrics-server --tls-san ${PUBLIC_IPV4:-127.0.0.1} --write-kubeconfig-mode 644 --kubelet-arg fail-swap-on=false" sh -
+      curl -sfL https://raw.githubusercontent.com/k3s-io/k3s/master/install.sh | INSTALL_K3S_EXEC="--disable traefik --disable metrics-server --tls-san $${PUBLIC_IPV4:-127.0.0.1} --write-kubeconfig-mode 644 --kubelet-arg fail-swap-on=false" sh -
 
       export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 

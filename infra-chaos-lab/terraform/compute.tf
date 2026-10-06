@@ -40,7 +40,11 @@ resource "aws_instance" "k3s_node" {
     }
   }
 
-  user_data = file("${path.module}/cloud-init.yaml")
+  user_data = templatefile("${path.module}/cloud-init.yaml.tftpl", {
+    values_argocd        = indent(6, file("${path.module}/../helm/values-argocd.yaml"))
+    values_prometheus    = indent(6, file("${path.module}/../helm/values-prometheus.yaml"))
+    application_baseline = indent(6, file("${path.module}/../k8s/application-baseline.yaml"))
+  })
 
   tags = {
     Name = "messframework-k3s-node"
