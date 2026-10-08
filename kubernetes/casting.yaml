@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: casting
+  labels:
+    app: casting
 spec:
   replicas: 4
   selector:
@@ -23,21 +25,67 @@ spec:
                 topologyKey: kubernetes.io/hostname
       containers:
         - name: casting
-          image: timo.zimmermann1/casting-service:latest 
+          image: timozimmermann1/casting-service:latest 
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+              name: http
+          env:
+            # Server-Port auf 80 setzen (passend zu containerPort 80)
+            - name: PORT
+              value: "80"
+            # Ziel-URL des Warehouse-Services im Cluster
+            - name: WAREHOUSE_URL
+              value: "http://warehouse:80/inventory"
+            # 90 % PASSED, 10 % REJECTED
+            - name: PASS_PROBABILITY
+              value: "0.90"
+            - name: SIMULATE_DELAY_SEC
+              value: "0.5"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: casting
+  labels:
+    app: casting
 spec:
+  # NodePort erlaubt sowohl cluster-internen Zugriff (Port 80) als auch Browser-Zugriff auf die UI
+  type: NodePort
   selector:
     app: casting
   ports:
-    - port: 80
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30040
+      protocol: TCP
+---
+# Alias Service 'casting-service', falls der Schmelzofen http://casting-service/... aufruft
+apiVersion: v1
+kind: Service
+metadata:
+  name: casting-service
+  labels:
+    app: casting
+spec:
+  type: ClusterIP
+  selector:
+    app: casting
+  ports:
+    - name: http
+      port: 80
       targetPort: 80
       protocol: TCP
-  type: ClusterIP
-}
