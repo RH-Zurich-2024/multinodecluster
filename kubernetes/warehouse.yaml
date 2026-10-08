@@ -10,11 +10,13 @@ spec:
   selector:
     matchLabels:
       app: warehouse
-  template:
+  template: 
     metadata:
       labels:
         app: warehouse
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-konst
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -30,6 +32,8 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
+              hostPort: 81
+              protocol: TCP
           env:
             - name: ENABLE_DEMO
               value: "false"
@@ -51,24 +55,7 @@ spec:
   selector:
     app: warehouse
   ports:
-    - port: 80
+    - port: 81
       targetPort: 8000
       protocol: TCP
   type: ClusterIP
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: warehouse
-spec:
-  ingressClassName: traefik
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: warehouse
-                port:
-                  number: 80

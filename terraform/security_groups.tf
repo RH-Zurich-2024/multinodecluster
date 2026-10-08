@@ -66,6 +66,14 @@ resource "aws_security_group" "k3s_node_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Direct Warehouse HTTP access, without an ingress controller
+  ingress {
+    description = "Warehouse HTTP"
+    from_port   = 81
+    to_port     = 81
+    protocol    = "tcp"
+    cidr_blocks = [local.allowed_cidr]
+  }
   # HTTP / HTTPS (fuer Ingress-Controller / Web-Workloads)
   ingress {
     description = "HTTP"
