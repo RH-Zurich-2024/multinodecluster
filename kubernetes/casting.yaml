@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: casting
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: casting
+  template:
+    metadata:
+      labels:
+        app: casting
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: casting
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: casting
+          image: timo.zimmermann1/casting-service:latest 
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: casting
+spec:
+  selector:
+    app: casting
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: ClusterIP
+}
