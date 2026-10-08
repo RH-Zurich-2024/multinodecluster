@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: warehouse
 spec:
+  # In-memory inventory belongs to a single process.
   replicas: 1
   strategy:
     type: Recreate
@@ -14,11 +15,19 @@ spec:
       labels:
         app: warehouse
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: worker-konst
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: warehouse
+                topologyKey: kubernetes.io/hostname
       containers:
         - name: warehouse
           image: konstantinsource/warehouse:1.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           env:
@@ -33,30 +42,19 @@ spec:
               path: /health
               port: 8000
             initialDelaySeconds: 10
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 256Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            capabilities:
-              drop: ["ALL"]
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: warehouse
 spec:
-  type: ClusterIP
   selector:
     app: warehouse
   ports:
     - port: 80
       targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
