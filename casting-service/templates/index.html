@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service 4: Casting & Qualitätsprüfung</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.6)); }
+      50% { opacity: 0.8; filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.3)); }
+    }
+    .glow-molten { animation: pulse-glow 3s infinite ease-in-out; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- Oberer Navigationsbalken -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+          <i class="fa-solid fa-cube text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">Service 4 / 5</span>
+            <h1 class="text-lg font-bold tracking-tight text-white">Casting & Qualitätsprüfung</h1>
+          </div>
+          <p class="text-xs text-slate-400">Gießerei, Barren-Formung & Qualitätskontrolle</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="font-medium">POST /cast bereit</span>
+        </div>
+
+        <button onclick="fetchData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5" title="Jetzt aktualisieren">
+          <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
+          <span>Aktualisieren</span>
+        </button>
+
+        <button onclick="openConfigModal()" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium shadow-md shadow-orange-600/20 transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Setup</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hauptinhalt -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Pipeline Visualisierung Stepper -->
+    <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 shadow-xl">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+        <span>Gesamte Fabrik-Pipeline Ablauf</span>
+        <span class="text-slate-500 font-normal">HTTP REST Kette</span>
+      </div>
+      <div class="grid grid-cols-5 gap-2 text-center text-xs">
+        <!-- 1. Delivery -->
+        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
+          <div class="text-slate-400 font-medium">1. Delivery</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">POST /deliver</div>
+          <div class="text-[9px] text-slate-500 mt-1">Startpunkt</div>
+        </div>
+        <!-- 2. Transport -->
+        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
+          <div class="text-slate-400 font-medium">2. Transport</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Sleep 2s</div>
+          <div class="text-[9px] text-slate-500 mt-1">Logistik</div>
+        </div>
+        <!-- 3. Smelting -->
+        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
+          <div class="text-slate-400 font-medium">3. Smelting</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">1450°C liquid</div>
+          <div class="text-[9px] text-slate-500 mt-1">Schmelzofen</div>
+        </div>
+        <!-- 4. Casting (Active) -->
+        <div class="p-2.5 rounded-xl bg-gradient-to-b from-orange-500/20 to-amber-600/10 border-2 border-orange-500 glow-molten relative">
+          <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-orange-500 text-slate-950 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
+            Dieser Service
+          </div>
+          <div class="text-orange-400 font-bold mt-1">4. Casting & Prüfung</div>
+          <div class="text-[10px] text-orange-200 mt-0.5">"shape": "Barren"</div>
+          <div class="text-[9px] text-orange-300/80 mt-1">90% OK / 10% Reject</div>
+        </div>
+        <!-- 5. Warehouse -->
+        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
+          <div class="text-slate-400 font-medium">5. Warehouse</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">GET /inventory</div>
+          <div class="text-[9px] text-slate-500 mt-1">Endstation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI / Metriken Kacheln -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
+        <div class="absolute right-3 top-3 text-slate-800 text-4xl group-hover:text-slate-700 transition">
+          <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Verarbeitet Gesamt</p>
+        <p id="stat-total" class="text-3xl font-extrabold text-white mt-1">0</p>
+        <div class="text-xs text-slate-400 mt-2 flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-down text-slate-500"></i>
+          <span>Über <code class="text-slate-300">POST /cast</code> empfangen</span>
+        </div>
+      </div>
+
+      <!-- Passed -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
+        <div class="absolute right-3 top-3 text-emerald-950 text-4xl group-hover:text-emerald-900 transition">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Qualitätsprüfung: PASSED</p>
+        <p id="stat-passed" class="text-3xl font-extrabold text-emerald-400 mt-1">0</p>
+        <div class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
+          <span id="stat-pass-rate" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">0%</span>
+          <span>Erfolgsquote</span>
+        </div>
+      </div>
+
+      <!-- Rejected -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
+        <div class="absolute right-3 top-3 text-rose-950 text-4xl group-hover:text-rose-900 transition">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+        <p class="text-xs font-medium text-rose-400 uppercase tracking-wider">Qualitätsprüfung: REJECTED</p>
+        <p id="stat-rejected" class="text-3xl font-extrabold text-rose-400 mt-1">0</p>
+        <div class="text-xs text-slate-400 mt-2">
+          <span>Ausschuss / Qualitätsmangel</span>
+        </div>
+      </div>
+
+      <!-- Forwarded to Warehouse -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
+        <div class="absolute right-3 top-3 text-blue-950 text-4xl group-hover:text-blue-900 transition">
+          <i class="fa-solid fa-warehouse"></i>
+        </div>
+        <p class="text-xs font-medium text-blue-400 uppercase tracking-wider">An Lager Gesendet</p>
+        <p id="stat-forwarded" class="text-3xl font-extrabold text-blue-400 mt-1">0</p>
+        <div class="text-xs text-slate-400 mt-2 truncate flex items-center space-x-1">
+          <i class="fa-solid fa-paper-plane text-blue-400"></i>
+          <span id="stat-warehouse-url" class="truncate" title="Warehouse URL">...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mittlerer Bereich: Interaktiver Prüf-Simulator & Live Log -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Manuelle Test-Station / Simulator (1 Spalte) -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+              <i class="fa-solid fa-flask-vial text-orange-400"></i>
+              <span>Test-Batch simulieren</span>
+            </h2>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Simuliert Smelting 3</span>
+          </div>
+
+          <p class="text-xs text-slate-400 mb-4">
+            Simuliere den Eingang geschmolzenen Metalls aus dem Schmelzofen, um den Guss- und Prüfablauf sofort live zu testen.
+          </p>
+
+          <form id="test-batch-form" onsubmit="submitTestBatch(event)" class="space-y-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-300 mb-1">Batch ID</label>
+              <input type="text" id="input-batch-id" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500 font-mono" placeholder="z. B. MET-101" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">Material</label>
+                <select id="input-material" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                  <option value="Eisen">Eisen</option>
+                  <option value="Stahl">Stahl</option>
+                  <option value="Kupfer">Kupfer</option>
+                  <option value="Aluminium">Aluminium</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">Gewicht (kg)</label>
+                <input type="number" id="input-weight" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500" value="500" min="50" max="5000">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">Temperatur (°C)</label>
+                <input type="number" id="input-temp" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500" value="1450">
+              </div>
+              <div>
+                <label class="block text-[11px] font-medium text-slate-300 mb-1">Vorheriger Status</label>
+                <input type="text" id="input-status" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 focus:outline-none" value="liquid" readonly>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" id="btn-submit-test" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold text-xs shadow-lg shadow-orange-500/20 transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-hammer"></i>
+                <span>Gießen & Prüfen auslösen</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="sim-status" class="hidden mt-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+          <!-- Dynamischer Status des letzten Tests -->
+        </div>
+      </div>
+
+      <!-- Live Terminal Activity Log (2 Spalten) -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col lg:col-span-2">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2">
+            <span class="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Live Ereignis-Log</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Echtzeit HTTP Feed</span>
+        </div>
+
+        <div id="log-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-3 flex-1 overflow-y-auto max-h-72 font-mono text-[11px] space-y-1.5">
+          <div class="text-slate-500 italic">Warte auf eingehende Batches...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabelle der letzten Prüfungen -->
+    <div class="rounded-2xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-orange-400"></i>
+            <span>Verarbeitete Batches & Prüfprotokoll</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Chronologischer Verlauf aller gegossenen Barren</p>
+        </div>
+        <button onclick="resetStats()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center space-x-1">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Historie leeren</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950/70 border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-semibold">
+            <tr>
+              <th class="py-3 px-4">Zeit</th>
+              <th class="py-3 px-4">Batch ID</th>
+              <th class="py-3 px-4">Material</th>
+              <th class="py-3 px-4">Gewicht</th>
+              <th class="py-3 px-4">Form ("shape")</th>
+              <th class="py-3 px-4">Qualitätsprüfung</th>
+              <th class="py-3 px-4">Lager-Status</th>
+              <th class="py-3 px-4 text-right">Details</th>
+            </tr>
+          </thead>
+          <tbody id="batch-table-body" class="divide-y divide-slate-800/60 font-mono text-xs">
+            <tr>
+              <td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Sende einen Request an POST /cast!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Konfigurations-Modal -->
+  <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-sliders text-orange-400"></i>
+          <span>Service 4 Konfiguration</span>
+        </h3>
+        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="config-form" onsubmit="saveConfig(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">
+            Qualitätsprüfung Pass-Rate: <span id="label-pass-prob" class="font-bold text-orange-400">90%</span>
+          </label>
+          <input type="range" id="cfg-pass-prob" min="0" max="100" value="90" class="w-full accent-orange-500 cursor-pointer" oninput="document.getElementById('label-pass-prob').innerText = this.value + '%'">
+          <p class="text-[10px] text-slate-400 mt-0.5">Wahrscheinlichkeit, dass ein gegossener Barren die Prüfung besteht (Standard: 90 % OK, 10 % REJECTED).</p>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">Ziel Lager-Service URL (Warehouse)</label>
+          <input type="url" id="cfg-warehouse-url" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" placeholder="http://warehouse-service:5000/inventory" required>
+          <p class="text-[10px] text-slate-400 mt-0.5">Endpunkt des nächsten Schritts (Service 5: Warehouse), an den fertige Barren per POST gesendet werden.</p>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">Gießdauer Simulation (Sekunden)</label>
+          <input type="number" step="0.5" min="0" max="10" id="cfg-delay-sec" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" value="1.0">
+          <p class="text-[10px] text-slate-400 mt-0.5">Künstliche Verzögerung zur Veranschaulichung des Abkühlens (Standard: 1 Sekunde).</p>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="cfg-forward-rejected" class="accent-orange-500 h-4 w-4 rounded border-slate-800">
+          <label for="cfg-forward-rejected" class="text-slate-300 font-medium">Ausschuss (REJECTED) trotzdem an Lager senden</label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex justify-end space-x-2">
+          <button type="button" onclick="closeConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Abbrechen</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold shadow-md shadow-orange-600/20">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JSON Detail-Modal -->
+  <div id="json-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="json-modal-title" class="text-sm font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-code text-orange-400"></i>
+          <span>Batch Datenpaket</span>
+        </h3>
+        <button onclick="closeJsonModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <span class="text-slate-400 font-semibold block mb-1">Ausgehendes JSON an Warehouse (Service 5):</span>
+          <pre id="json-modal-output" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-400 font-mono text-[11px] overflow-x-auto"></pre>
+        </div>
+        <div>
+          <span class="text-slate-400 font-semibold block mb-1">Ursprüngliches Eingangs-JSON aus Schmelzofen (Service 3):</span>
+          <pre id="json-modal-input" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300 font-mono text-[11px] overflow-x-auto"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frontend JavaScript -->
+  <script>
+    let globalBatches = [];
+
+    function generateRandomBatchId() {
+      return "MET-" + Math.floor(100 + Math.random() * 900);
+    }
+
+    document.getElementById("input-batch-id").value = generateRandomBatchId();
+
+    async function fetchData() {
+      const refreshIcon = document.getElementById("refresh-icon");
+      if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
+      try {
+        const [statsRes, batchesRes, logsRes] = await Promise.all([
+          fetch("/api/stats"),
+          fetch("/api/batches"),
+          fetch("/api/logs")
+        ]);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          renderStats(statsData);
+        }
+
+        if (batchesRes.ok) {
+          globalBatches = await batchesRes.json();
+          renderBatches(globalBatches);
+        }
+
+        if (logsRes.ok) {
+          const logsData = await logsRes.json();
+          renderLogs(logsData);
+        }
+      } catch (err) {
+        console.error("Fehler beim Laden der Daten:", err);
+      } finally {
+        if (refreshIcon) {
+          setTimeout(() => refreshIcon.classList.remove("fa-spin"), 500);
+        }
+      }
+    }
+
+    function renderStats(data) {
+      document.getElementById("stat-total").innerText = data.metrics.total;
+      document.getElementById("stat-passed").innerText = data.metrics.passed;
+      document.getElementById("stat-rejected").innerText = data.metrics.rejected;
+      document.getElementById("stat-pass-rate").innerText = data.metrics.pass_rate_percent + "%";
+      document.getElementById("stat-forwarded").innerText = data.metrics.forwarded_to_warehouse;
+      document.getElementById("stat-warehouse-url").innerText = data.config.warehouse_url;
+
+      // Modal Inputs vorbefüllen
+      document.getElementById("cfg-pass-prob").value = Math.round(data.config.pass_probability * 100);
+      document.getElementById("label-pass-prob").innerText = Math.round(data.config.pass_probability * 100) + "%";
+      document.getElementById("cfg-warehouse-url").value = data.config.warehouse_url;
+      document.getElementById("cfg-delay-sec").value = data.config.simulate_delay_sec;
+      document.getElementById("cfg-forward-rejected").checked = data.config.forward_rejected;
+    }
+
+    function renderBatches(batches) {
+      const tbody = document.getElementById("batch-table-body");
+      if (!batches || batches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Sende einen Request an POST /cast!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = batches.map((b, idx) => {
+        const isPassed = b.quality === "PASSED";
+        const badgeClass = isPassed 
+          ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" 
+          : "bg-rose-500/20 text-rose-400 border-rose-500/30";
+        
+        return `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-2.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">${b.timestamp.split(" ")[1] || b.timestamp}</td>
+            <td class="py-2.5 px-4 font-bold text-white whitespace-nowrap">${b.batch_id}</td>
+            <td class="py-2.5 px-4 text-slate-300">${b.material}</td>
+            <td class="py-2.5 px-4 text-slate-300">${b.weight_kg} kg</td>
+            <td class="py-2.5 px-4 text-amber-300 font-semibold">${b.shape || "Barren"}</td>
+            <td class="py-2.5 px-4">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">
+                <i class="fa-solid ${isPassed ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${b.quality}
+              </span>
+            </td>
+            <td class="py-2.5 px-4 text-slate-400 text-[11px]">${b.warehouse_status}</td>
+            <td class="py-2.5 px-4 text-right">
+              <button onclick="openJsonModal(${idx})" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700">
+                JSON
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderLogs(logs) {
+      const container = document.getElementById("log-container");
+      if (!logs || logs.length === 0) {
+        container.innerHTML = `<div class="text-slate-500 italic">Warte auf eingehende Batches...</div>`;
+        return;
+      }
+
+      container.innerHTML = logs.map(l => {
+        let color = "text-slate-300";
+        if (l.level === "SUCCESS") color = "text-emerald-400";
+        if (l.level === "WARN") color = "text-amber-400";
+        if (l.level === "ERROR") color = "text-rose-400";
+        
+        return `<div class="leading-relaxed"><span class="text-slate-500">[${l.timestamp}]</span> <span class="${color}">${l.message}</span></div>`;
+      }).join("");
+    }
+
+    async function submitTestBatch(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-submit-test");
+      const statusBox = document.getElementById("sim-status");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Gieße & prüfe...</span>`;
+      statusBox.classList.remove("hidden");
+      statusBox.innerHTML = `<span class="text-orange-400"><i class="fa-solid fa-fire-burner animate-bounce mr-1"></i> Metall wird in Barrenform gegossen und auf Qualität geprüft...</span>`;
+
+      const payload = {
+        batch_id: document.getElementById("input-batch-id").value.trim(),
+        material: document.getElementById("input-material").value,
+        weight_kg: parseFloat(document.getElementById("input-weight").value),
+        status: "liquid",
+        temp_celsius: parseFloat(document.getElementById("input-temp").value)
+      };
+
+      try {
+        const res = await fetch("/api/test-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        const isPassed = data.quality === "PASSED";
+
+        statusBox.innerHTML = `
+          <div class="font-bold ${isPassed ? 'text-emerald-400' : 'text-rose-400'} flex items-center space-x-1.5">
+            <i class="fa-solid ${isPassed ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+            <span>Ergebnis: ${data.quality}</span>
+          </div>
+          <div class="text-slate-300 mt-1">Lager: ${data.warehouse_status}</div>
+          <div class="mt-1 font-mono text-[10px] text-slate-400 bg-slate-900 p-2 rounded overflow-x-auto">
+            ${JSON.stringify(data.data, null, 2)}
+          </div>
+        `;
+
+        document.getElementById("input-batch-id").value = generateRandomBatchId();
+        fetchData();
+      } catch (err) {
+        statusBox.innerHTML = `<span class="text-rose-400">Fehler beim Ausführen: ${err}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-hammer"></i><span>Gießen & Prüfen auslösen</span>`;
+      }
+    }
+
+    async function saveConfig(e) {
+      e.preventDefault();
+      const payload = {
+        pass_probability: parseFloat(document.getElementById("cfg-pass-prob").value) / 100,
+        warehouse_url: document.getElementById("cfg-warehouse-url").value.trim(),
+        simulate_delay_sec: parseFloat(document.getElementById("cfg-delay-sec").value),
+        forward_rejected: document.getElementById("cfg-forward-rejected").checked
+      };
+
+      try {
+        const res = await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          closeConfigModal();
+          fetchData();
+        }
+      } catch (err) {
+        alert("Fehler beim Speichern der Konfiguration: " + err);
+      }
+    }
+
+    async function resetStats() {
+      if (!confirm("Möchtest du Zähler und Historie wirklich zurücksetzen?")) return;
+      await fetch("/api/reset-stats", { method: "POST" });
+      fetchData();
+    }
+
+    function openConfigModal() {
+      document.getElementById("config-modal").classList.remove("hidden");
+    }
+
+    function closeConfigModal() {
+      document.getElementById("config-modal").classList.add("hidden");
+    }
+
+    function openJsonModal(index) {
+      const b = globalBatches[index];
+      if (!b) return;
+      document.getElementById("json-modal-title").innerHTML = `<i class="fa-solid fa-code text-orange-400 mr-2"></i> Batch ${b.batch_id} (${b.quality})`;
+      document.getElementById("json-modal-output").innerText = JSON.stringify(b.raw_output, null, 2);
+      document.getElementById("json-modal-input").innerText = JSON.stringify(b.raw_input, null, 2);
+      document.getElementById("json-modal").classList.remove("hidden");
+    }
+
+    function closeJsonModal() {
+      document.getElementById("json-modal").classList.add("hidden");
+    }
+
+    // Initiales Laden und automatisches Polling alle 2.5 Sekunden
+    fetchData();
+    setInterval(fetchData, 2500);
+  </script>
+</body>
+</html>

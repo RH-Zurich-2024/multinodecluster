@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: casting-service
+  labels:
+    app: casting-service
+    pipeline-step: "4-casting"
+spec:
+  type: NodePort
+  selector:
+    app: casting-service
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      nodePort: 30040 # Erreichbar über http://<NODE_PUBLIC_IP>:30040
