@@ -31,13 +31,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: delivery
+  name: delivery-service
 spec:
+  type: NodePort
   selector:
     app: delivery
   ports:
     - port: 80
       targetPort: 80
       protocol: TCP
-  type: ClusterIP
+
+
 
