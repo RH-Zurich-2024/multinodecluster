@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Tests & Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Git & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Secrets / lokale Konfiguration
+.env
+*.tfvars
