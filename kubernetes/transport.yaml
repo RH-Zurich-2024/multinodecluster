@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transport-service
+  labels:
+    app: transport-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transport-service
+  template:
+    metadata:
+      labels:
+        app: transport-service
+    spec:
+      containers:
+        - name: transport-service
+          image: thenacken/transport-service:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SMELTING_URL
+              value: "http://smelting-service:80/smelt"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transport-service
+  labels:
+    app: transport-service
+spec:
+  type: ClusterIP
+  selector:
+    app: transport-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
