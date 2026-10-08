@@ -25,7 +25,7 @@ output "ssh_login_command" {
 
 output "bootstrap_status_command" {
   description = "Befehl zum Live-Verfolgen des K3s Bootstrap-Logs"
-  value       = "ssh ubuntu@${aws_instance.k3s_node.public_ip} \"tail -f /var/log/bootstrap-cluster.log\""
+  value       = "ssh ubuntu@${aws_instance.k3s_node.public_ip} 'tail -f /var/log/bootstrap-cluster.log'"
 }
 
 # --- Ausgaben fuer den Master (server) ---
@@ -56,5 +56,5 @@ output "worker_tfvars_snippet" {
 
 output "kubeconfig_fetch_command" {
   description = "Befehl zum Herunterladen der Kubeconfig fuer lokalen kubectl-Zugriff"
-  value       = var.node_role == "server" ? "ssh ubuntu@${aws_instance.k3s_node.public_ip} \"sudo cat /etc/rancher/k3s/k3s.yaml\" | sed 's/127.0.0.1/${aws_instance.k3s_node.public_ip}/g' > kubeconfig-k3s.yaml" : "N/A"
+  value       = var.node_role == "server" ? "ssh ubuntu@${aws_instance.k3s_node.public_ip} 'sudo cat /etc/rancher/k3s/k3s.yaml' | sed 's/127.0.0.1/${aws_instance.k3s_node.public_ip}/g' > kubeconfig-k3s.yaml" : "N/A"
 }
