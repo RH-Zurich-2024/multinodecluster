@@ -13,13 +13,13 @@ resource "aws_security_group" "k3s_node_sg" {
   description = "Security Group fuer K3s Node (${local.node_name})"
   vpc_id      = aws_vpc.main.id
 
-  # SSH-Zugriff (nur fuer den Besitzer dieser Node-Instanz)
+  # SSH-Zugriff (von ueberall erreichbar, durch SSH Private Key geschuetzt)
   ingress {
-    description = "SSH"
+    description = "SSH from anywhere"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [local.allowed_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Cluster-interner Traffic zwischen K3s Nodes (wenn in gleicher SG / VPC)
@@ -72,7 +72,7 @@ resource "aws_security_group" "k3s_node_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [local.allowed_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -80,16 +80,16 @@ resource "aws_security_group" "k3s_node_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [local.allowed_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # K8s NodePort Range
+  # K8s NodePort Range (z. B. Casting-Web-UI auf Port 30040)
   ingress {
     description = "K8s NodePort Services"
     from_port   = 30000
     to_port     = 32767
     protocol    = "tcp"
-    cidr_blocks = [local.allowed_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Vollstaendiger Egress
