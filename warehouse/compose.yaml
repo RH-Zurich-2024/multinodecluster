@@ -1,0 +1,8 @@
+services:
+  warehouse:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ENABLE_DEMO: "true"
+    restart: unless-stopped
