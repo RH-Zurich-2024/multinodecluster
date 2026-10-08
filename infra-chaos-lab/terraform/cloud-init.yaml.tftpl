@@ -74,7 +74,6 @@ write_files:
           --node-name ${node_name} \
           --node-ip $${PRIVATE_IPV4:-127.0.0.1} \
           --node-external-ip $${PUBLIC_IPV4:-127.0.0.1} \
-          --flannel-external-ip \
           --kubelet-arg fail-swap-on=false" sh -
 
         echo "=== [4/4] K3s Agent (${node_name}) erfolgreich gestartet und verbunden: $(date) ===" > /var/log/bootstrap-complete.log
