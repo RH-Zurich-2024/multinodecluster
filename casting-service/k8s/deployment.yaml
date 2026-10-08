@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: casting-service
+  labels:
+    app: casting-service
+    pipeline-step: "4-casting"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: casting-service
+  template:
+    metadata:
+      labels:
+        app: casting-service
+        pipeline-step: "4-casting"
+    spec:
+      containers:
+        - name: casting-service
+          image: casting-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            # URL des nächsten Pipeline-Schritts (Service 5: Warehouse)
+            - name: WAREHOUSE_URL
+              value: "http://warehouse-service:5000/inventory"
+            # Qualitätsprüfungs-Erfolgsquote (0.90 = 90% PASSED, 10% REJECTED)
+            - name: PASS_PROBABILITY
+              value: "0.90"
+            # Simulierte Gieß-/Kühlzeit in Sekunden
+            - name: SIMULATE_DELAY_SEC
+              value: "1.0"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 3
+            periodSeconds: 5
