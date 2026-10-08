@@ -1,0 +1,33 @@
+# ==============================================================================
+# K3s Multinode Cluster - Beispiel-Konfiguration
+# ==============================================================================
+
+# AWS Region & Instanztyp
+aws_region    = "eu-central-1"
+instance_type = "t3.small"
+
+# Pfad zu deinem lokalen SSH Public Key
+ssh_public_key_path = "~/.ssh/id_ed25519.pub"
+
+# ------------------------------------------------------------------------------
+# SZENARIO 1: Du bist der MASTER (Control-Plane)
+# ------------------------------------------------------------------------------
+# Als Master musst du nichts weiter konfigurieren. Standard ist node_role = "server".
+# Nach 'terraform apply' erhaeltst du:
+#   - k3s_server_url
+#   - k3s_token
+#   - Fertigen Befehl/tfvars-Snippet fuer deine Kollegen
+#
+# node_role = "server"
+# node_name = "k3s-master"
+
+
+# ------------------------------------------------------------------------------
+# SZENARIO 2: Du bist ein WORKER (Agent Node)
+# ------------------------------------------------------------------------------
+# Trage die URL und den Token ein, die der Master-Betreiber dir gegeben hat:
+#
+# node_role  = "agent"
+# server_url = "https://<MASTER_PUBLIC_IP>:6443"
+# k3s_token  = "<TOKEN_VOM_MASTER>"
+# node_name  = "worker-alex"

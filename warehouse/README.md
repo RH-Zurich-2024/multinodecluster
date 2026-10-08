@@ -23,7 +23,7 @@ $env:ENABLE_DEMO = "true"
 
 ## Casting anbinden
 
-Casting sendet HTTP POST an `http://warehouse/store` im selben Kubernetes-Namespace. `POST /inventory` ist ein Alias. Alle zusätzlichen Pipeline-Felder bleiben erhalten; der Service ergänzt `received_at` und `warehouse_instance`.
+Casting sendet HTTP POST an `http://warehouse:81/store` im selben Kubernetes-Namespace. `POST /inventory` ist ein Alias. Alle zusätzlichen Pipeline-Felder bleiben erhalten; der Service ergänzt `received_at` und `warehouse_instance`.
 
 ```json
 {"batch_id":"MET-101","material":"Eisen","weight_kg":500,"shape":"Barren","quality":"PASSED"}
@@ -41,7 +41,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8000/store -ContentType 'ap
 docker build -t warehouse:1.0.0 .
 # Image in eure Registry pushen und image in k8s.yaml entsprechend ersetzen.
 kubectl apply -f k8s.yaml
-kubectl port-forward service/warehouse 8000:80
+kubectl port-forward service/warehouse 81:81
 ```
 
 Das Image muss auf allen möglichen Nodes verfügbar sein. Das Deployment nutzt genau eine Replik und einen Uvicorn-Worker, da die Python-Liste pro Prozess existiert. Der Pod kann auf einem beliebigen geeigneten Node laufen. Recreate verhindert bei Updates parallele Warehouse-Pods, verursacht aber eine kurze Unterbrechung. Neustarts, Updates oder Node-Ausfälle löschen den gesamten Bestand. Nicht horizontal skalieren, solange kein gemeinsamer Speicher eingeführt wurde. Das Manifest enthält Ressourcenlimits, Health-Probes und einen Benutzer ohne Root-Rechte.
@@ -52,4 +52,4 @@ Der Service enthält keine Authentifizierung und ist für das interne Fabriknetz
 
 ## HTTP-Zugriff im Cluster
 
-Der Service nimmt HTTP auf Port 80 entgegen und leitet an Container-Port 8000 weiter. Der Traefik-Ingress routet HTTP-Anfragen auf Pfad / ohne Host-Einschraenkung zum Warehouse. Nach dem Apply ist das Dashboard bei aktivem Traefik/ServiceLB unter http://<NODE-IP>/ erreichbar. Die Security Group muss Port 80 fuer den Client zulassen. Fuer weitere Frontends eigene Hostnamen oder spezifische Ingress-Regeln verwenden. Image-Neubau ist fuer diese Manifest-Aenderung nicht erforderlich.
+Warehouse ist ein ClusterIP-Service auf Port 81 und leitet intern an Container-Port 8000 weiter. Casting nutzt http://warehouse:81/store. Der Pod ist fest auf worker-konst platziert und bindet hostPort 81. Das Frontend ist direkt unter http://63.176.145.241:81 erreichbar, ohne Ingress. Die AWS-Security-Group erlaubt TCP 81 fuer die konfigurierte Client-IP (local.allowed_cidr). Bei einer geaenderten Client-IP muss diese Freigabe angepasst werden. Optional lokal: kubectl port-forward service/warehouse 81:81. Ein Deployment-Neustart verliert den In-Memory-Bestand.
