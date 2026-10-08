@@ -1,0 +1,17 @@
+# ==============================================================================
+# Smelting Service – Laufzeitabhängigkeiten
+# Installiert via: pip install -r requirements.txt
+# ==============================================================================
+
+# Web-Framework
+fastapi>=0.115.0,<1.0.0
+
+# ASGI-Server
+uvicorn[standard]>=0.30.0,<1.0.0
+
+# Async-HTTP-Client für die Weiterleitung an den Casting Service
+httpx>=0.27.0,<1.0.0
+
+# Validierung der Request-Payloads (via FastAPI transitiv vorhanden,
+# explizit gepinnt, da direkt im Datenmodell verwendet)
+pydantic>=2.8.0,<3.0.0
