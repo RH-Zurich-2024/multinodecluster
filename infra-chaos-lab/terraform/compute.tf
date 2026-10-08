@@ -14,13 +14,40 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# Lokaler SSH Public Key
-resource "aws_key_pair" "lab_key" {
-  key_name   = "messframework-ssh-key"
-  public_key = file(pathexpand(var.ssh_public_key_path))
+# Eindeutiger Suffix für Hostnamen & Ressourcen, um Namenskonflikte zu vermeiden
+resource "random_string" "node_suffix" {
+  length  = 4
+  special = false
+  upper   = false
 }
 
-# EC2 Single-Node K3s Instanz (t3.medium: 2 vCPUs, 4 GB RAM)
+# Zufälliger Token für K3s Cluster, falls beim Server nicht manuell vorgegeben
+resource "random_password" "k3s_token" {
+  length  = 48
+  special = false
+}
+
+locals {
+  default_name = var.node_role == "server" ? "k3s-master" : "k3s-worker-${random_string.node_suffix.result}"
+  node_name    = var.node_name != "" ? var.node_name : local.default_name
+  k3s_token    = var.k3s_token != "" ? var.k3s_token : random_password.k3s_token.result
+}
+
+# Lokaler SSH Public Key (mit Präfix gegen Kollisionen in geteilten AWS Accounts)
+resource "aws_key_pair" "lab_key" {
+  key_name_prefix = "k3s-key-${local.node_name}-"
+  public_key      = file(pathexpand(var.ssh_public_key_path))
+}
+
+# Prüfung der Pflichtangaben für Worker
+check "worker_configuration_check" {
+  assert {
+    condition     = var.node_role == "server" || (var.server_url != "" && var.k3s_token != "")
+    error_message = "Fuer einen Worker (node_role = 'agent') muessen 'server_url' (z. B. 'https://<MASTER_PUBLIC_IP>:6443') und 'k3s_token' in terraform.tfvars oder als -var angegeben werden!"
+  }
+}
+
+# EC2 K3s Instanz (Server oder Agent)
 resource "aws_instance" "k3s_node" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
@@ -36,17 +63,19 @@ resource "aws_instance" "k3s_node" {
     encrypted             = true
 
     tags = {
-      Name = "messframework-k3s-root-vol"
+      Name = "k3s-${local.node_name}-root-vol"
     }
   }
 
   user_data = templatefile("${path.module}/cloud-init.yaml.tftpl", {
-    values_argocd        = indent(6, file("${path.module}/../helm/values-argocd.yaml"))
-    values_prometheus    = indent(6, file("${path.module}/../helm/values-prometheus.yaml"))
-    application_baseline = indent(6, file("${path.module}/../k8s/application-baseline.yaml"))
+    node_role  = var.node_role
+    node_name  = local.node_name
+    k3s_token  = local.k3s_token
+    server_url = var.server_url
   })
 
   tags = {
-    Name = "messframework-k3s-node"
+    Name = "k3s-${local.node_name}"
+    Role = var.node_role
   }
 }

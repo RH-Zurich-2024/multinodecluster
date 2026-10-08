@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/http"
       version = "~> 3.4"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 
   # Vollständig ephemer: Lokaler State, kein S3-Backend-Overhead, 0,00 € Kosten im Ruhezustand
