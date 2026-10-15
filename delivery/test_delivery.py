@@ -30,6 +30,22 @@ class DeliveryTest(unittest.TestCase):
     def tearDown(self):
         self.server.server_close()
 
+    def test_index_serves_order_creation_interface(self):
+        connection = HTTPConnection("127.0.0.1", self.server.server_port)
+        thread = threading.Thread(target=self.server.handle_request)
+        thread.start()
+        connection.request("GET", "/")
+        response = connection.getresponse()
+        response_body = response.read().decode("utf-8")
+        thread.join()
+        connection.close()
+
+        self.assertEqual(response.status, 200)
+        self.assertIn("Neuen Auftrag", response_body)
+        self.assertIn('name="material" list="material-options"', response_body)
+        self.assertIn("datalist", response_body)
+        self.assertEqual(response.getheader("Content-Type"), "text/html; charset=utf-8")
+
     @patch.object(delivery_module, "urlopen")
     def test_deliver_adds_metadata_and_forwards_to_transport(self, mock_urlopen):
         mock_urlopen.return_value = MockTransportResponse()

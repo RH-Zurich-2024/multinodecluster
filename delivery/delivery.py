@@ -4,13 +4,32 @@ import uuid
 from io import BytesIO
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
 TRANSPORT_SERVICE_URL = "http://transport-service:80/transport"
+INDEX_FILE = Path(__file__).with_name("index.html")
 
 class DeliveryHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/":
+            try:
+                payload = INDEX_FILE.read_bytes()
+            except OSError:
+                self._send_json({"error": "Delivery interface unavailable"}, 500)
+                return
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+            return
+
+        self._send_json({"error": "Not found"}, 404)
+
     def do_POST(self):
         if self.path != "/deliver":
             self._send_json({"error": "Not found"}, 404)
