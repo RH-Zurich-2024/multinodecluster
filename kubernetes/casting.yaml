@@ -26,6 +26,7 @@ spec:
       containers:
         - name: casting
           image: timozimmermann1/casting-service:latest 
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
               name: http
@@ -34,10 +35,10 @@ spec:
               value: "8000"
             # Ziel-URL des Warehouse-Services im Cluster
             - name: WAREHOUSE_URL
-              value: "http://warehouse-service:80/inventory"
-            # 90 % PASSED, 10 % REJECTED
+              value: "http://warehouse:81/inventory"
+            # 60 % PASSED, 40 % REJECTED (erhoehter Ausschuss)
             - name: PASS_PROBABILITY
-              value: "0.90"
+              value: "0.60"
             - name: SIMULATE_DELAY_SEC
               value: "0.5"
           readinessProbe:
