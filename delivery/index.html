@@ -151,11 +151,33 @@
     }
     .result.error { color: var(--red); background: #ff97850d; border-color: #ff978530; }
     .result.visible { display: block; }
+    .history {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 7vw 75px;
+    }
+    .history h2 { margin: 0 0 18px; }
+    .history-list { display: grid; gap: 9px; }
+    .history-item {
+      display: grid;
+      grid-template-columns: 110px 1fr 100px 1fr;
+      gap: 15px;
+      padding: 15px;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      font-size: 12px;
+    }
+    .history-item strong { color: var(--lime); }
+    .history-empty { color: var(--muted); font-size: 13px; }
     @media (max-width: 760px) {
       header { padding: 0 6vw; }
       .status { display: none; }
       main { grid-template-columns: 1fr; padding: 55px 6vw; }
       .route { margin-top: 30px; }
+      .history { padding: 0 6vw 55px; }
+      .history-item { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -203,10 +225,50 @@
       </form>
     </section>
   </main>
+  <section class="history" aria-labelledby="history-title">
+    <div class="eyebrow">02 / Verlauf</div>
+    <h2 id="history-title">Letzte Aufträge</h2>
+    <div id="history-list" class="history-list">
+      <div class="history-empty">Verlauf wird geladen …</div>
+    </div>
+  </section>
   <script>
     const form = document.querySelector("#order-form");
     const button = form.querySelector("button");
     const result = document.querySelector("#result");
+    const historyList = document.querySelector("#history-list");
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[character]));
+    }
+
+    function renderHistory(orders) {
+      if (!orders.length) {
+        historyList.innerHTML = '<div class="history-empty">Noch keine Aufträge vorhanden.</div>';
+        return;
+      }
+      historyList.innerHTML = orders.map((order) => `
+        <div class="history-item">
+          <strong>${escapeHtml(order.batch_id)}</strong>
+          <span>${escapeHtml(order.material)}</span>
+          <span>${escapeHtml(order.weight_kg)} kg</span>
+          <span>${escapeHtml(order.note || "Keine Notiz")}</span>
+        </div>
+      `).join("");
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch("/history");
+        const orders = await response.json();
+        if (!response.ok) throw new Error(orders.error || "Verlauf konnte nicht geladen werden.");
+        renderHistory(orders);
+      } catch (error) {
+        historyList.innerHTML = `<div class="history-empty">${error.message}</div>`;
+      }
+    }
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -229,6 +291,7 @@
         result.textContent = `Auftrag ${data.batch_id} ist unterwegs.`;
         result.className = "result visible";
         form.reset();
+        loadHistory();
       } catch (error) {
         result.textContent = error.message;
         result.className = "result visible error";
@@ -237,6 +300,7 @@
         button.textContent = "Auftrag starten  →";
       }
     });
+    loadHistory();
   </script>
 </body>
 </html>

@@ -27,6 +27,23 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: "postgres-cluster-rw"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "app"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
 ---
 apiVersion: v1
 kind: Service

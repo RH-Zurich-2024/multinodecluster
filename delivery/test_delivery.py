@@ -46,8 +46,38 @@ class DeliveryTest(unittest.TestCase):
         self.assertIn("datalist", response_body)
         self.assertEqual(response.getheader("Content-Type"), "text/html; charset=utf-8")
 
+    @patch.object(
+        delivery_module,
+        "get_delivery_history",
+        return_value=[
+            {
+                "batch_id": "ABC12345",
+                "material": "Eisen",
+                "weight_kg": 500,
+                "note": None,
+                "timestamp": "2026-10-15T10:00:00+00:00",
+            }
+        ],
+    )
+    def test_history_returns_saved_orders(self, mock_get_history):
+        connection = HTTPConnection("127.0.0.1", self.server.server_port)
+        thread = threading.Thread(target=self.server.handle_request)
+        thread.start()
+        connection.request("GET", "/history")
+        response = connection.getresponse()
+        response_body = json.loads(response.read())
+        thread.join()
+        connection.close()
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response_body[0]["batch_id"], "ABC12345")
+        mock_get_history.assert_called_once_with()
+
+    @patch.object(delivery_module, "save_delivery")
     @patch.object(delivery_module, "urlopen")
-    def test_deliver_adds_metadata_and_forwards_to_transport(self, mock_urlopen):
+    def test_deliver_adds_metadata_and_forwards_to_transport(
+        self, mock_urlopen, mock_save_delivery
+    ):
         mock_urlopen.return_value = MockTransportResponse()
         request_body = {
             "material": "Eisen",
