@@ -29,9 +29,9 @@ logger = logging.getLogger("casting-service")
 app = Flask(__name__)
 
 # Konfiguration via Umgebungsvariablen (mit flexiblen Defaults)
-WAREHOUSE_URL = os.environ.get("WAREHOUSE_URL", "http://warehouse-service:5000/inventory")
-DEFAULT_PASS_PROBABILITY = float(os.environ.get("PASS_PROBABILITY", "0.90"))
-SIMULATE_DELAY_SEC = float(os.environ.get("SIMULATE_DELAY_SEC", "1.0"))
+WAREHOUSE_URL = os.environ.get("WAREHOUSE_URL", "http://warehouse:81/inventory")
+DEFAULT_PASS_PROBABILITY = float(os.environ.get("PASS_PROBABILITY", "0.60"))
+SIMULATE_DELAY_SEC = float(os.environ.get("SIMULATE_DELAY_SEC", "0.5"))
 FORWARD_REJECTED = os.environ.get("FORWARD_REJECTED", "false").lower() in ("true", "1", "yes")
 
 # In-Memory Datenspeicher & Thread-Safety

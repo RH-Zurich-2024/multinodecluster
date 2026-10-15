@@ -19,7 +19,7 @@ spec:
       containers:
         - name: casting-service
           image: casting-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
               name: http
