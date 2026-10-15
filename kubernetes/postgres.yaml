@@ -5,5 +5,21 @@ metadata:
 spec:
   instances: 3
 
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+      secret:
+        name: postgres-secret 
+
   storage:
     size: 1Gi
+---
+apiVersion: v1
+data:
+  username: YXBw
+  password: cGFzc3dvcmQ=
+kind: Secret
+metadata:
+  name: postgres-secret 
+type: kubernetes.io/basic-auth
