@@ -59,6 +59,11 @@
           <span class="font-medium">POST /cast bereit</span>
         </div>
 
+        <div id="db-badge" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs">
+          <i class="fa-solid fa-database text-xs"></i>
+          <span id="db-status-text">PostgreSQL: Prüfe...</span>
+        </div>
+
         <button onclick="fetchData()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5 shadow" title="Jetzt manuell aktualisieren">
           <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
           <span>Aktualisieren</span>
@@ -455,6 +460,18 @@
       document.getElementById("stat-pass-rate").innerText = data.metrics.pass_rate_percent + "%";
       document.getElementById("stat-forwarded").innerText = data.metrics.forwarded_to_warehouse;
       document.getElementById("stat-warehouse-url").innerText = data.config.warehouse_url;
+
+      const dbBadge = document.getElementById("db-badge");
+      const dbStatusText = document.getElementById("db-status-text");
+      if (dbBadge && dbStatusText && data.config) {
+        if (data.config.db_connected) {
+          dbBadge.className = "hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs";
+          dbStatusText.innerText = "PostgreSQL: Verbunden";
+        } else {
+          dbBadge.className = "hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs";
+          dbStatusText.innerText = "PostgreSQL: Offline (Speicher-Modus)";
+        }
+      }
 
       const passProbPct = Math.round(data.config.pass_probability * 100);
       const rejectProbPct = 100 - passProbPct;

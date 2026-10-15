@@ -41,6 +41,23 @@ spec:
               value: "0.60"
             - name: SIMULATE_DELAY_SEC
               value: "0.5"
+            # PostgreSQL Datenbank-Verbindung (vom CloudNativePG Operator)
+            - name: DB_HOST
+              value: "postgres-cluster-rw"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "app"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
           readinessProbe:
             httpGet:
               path: /health
