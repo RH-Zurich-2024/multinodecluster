@@ -69,5 +69,5 @@ spec:
   ports:
     - port: 8000
       targetPort: 8000
-      nodePort: 30020
+      nodePort: 30050
       protocol: TCP

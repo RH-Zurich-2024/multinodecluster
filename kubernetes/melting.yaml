@@ -75,7 +75,7 @@ spec:
     - name: http
       port: 80
       targetPort: 8003
-      nodePort: 30050
+      nodePort: 30030
       protocol: TCP
 ---
 # Alias Service 'melting-service', falls Clients http://melting-service/... nutzen

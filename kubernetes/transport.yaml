@@ -22,7 +22,7 @@ spec:
               name: http
           env:
             - name: SMELTING_URL
-              value: "http://smelting-service:80/smelt"
+              value: "http://melting-service:80/smelt"
 ---
 apiVersion: v1
 kind: Service
