@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FORGE — Transport</title>
+  <style>
+    :root {
+      --bg: #101313;
+      --panel: #191d1c;
+      --line: #303634;
+      --muted: #96a09a;
+      --cyan: #38bdf8;
+      --green: #4ade80;
+      --red: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: #edf1e9;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      height: 80px;
+      padding: 0 5vw;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand { font-size: 24px; font-weight: 700; letter-spacing: 3px; }
+    .brand span { color: var(--cyan); }
+    .status { font-size: 11px; letter-spacing: 1px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+    main { max-width: 1200px; margin: 0 auto; padding: 40px 5vw; }
+    .eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--cyan); }
+    h1 { font-size: clamp(32px, 4vw, 54px); margin: 10px 0 15px; font-weight: 600; }
+    .route { display: flex; gap: 10px; align-items: center; margin: 25px 0 35px; color: var(--muted); font-size: 11px; }
+    .route span.active { color: var(--cyan); font-weight: 700; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 35px; }
+    .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 32px; font-weight: 700; margin-top: 8px; color: #fff; }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .table-container { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .table-head { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    .table-head h2 { font-size: 16px; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { padding: 14px 20px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--line); font-weight: 500; }
+    td { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: monospace; }
+    .badge-cyan { background: #38bdf81a; color: var(--cyan); border: 1px solid #38bdf833; }
+    .badge-green { background: #4ade801a; color: var(--green); border: 1px solid #4ade8033; }
+    .empty { padding: 40px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">F<span>◈</span>RGE</div>
+    <div class="status">
+      <span class="dot" id="db-dot"></span>
+      <span id="db-status">PostgreSQL: Tabelle transport</span>
+    </div>
+  </header>
+  <main>
+    <div class="eyebrow">02 / Transport Service</div>
+    <h1>Materialdurchlauf</h1>
+    <div class="route">
+      <span>01 DELIVERY</span>
+      <span>→</span>
+      <span class="active">02 TRANSPORT</span>
+      <span>→</span>
+      <span>03 SMELTING</span>
+      <span>→</span>
+      <span>04 CASTING</span>
+      <span>→</span>
+      <span>05 WAREHOUSE</span>
+    </div>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-label">Durchgelaufene Materialien</div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-sub">Aus PostgreSQL gelesen</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Gesamtgewicht bewegt</div>
+        <div class="stat-value"><span id="stat-weight">0</span> <small style="font-size: 16px; color: var(--muted)">kg</small></div>
+        <div class="stat-sub" id="stat-tonnes">0.0 t</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ziel-Standort</div>
+        <div class="stat-value" style="font-size: 24px; color: var(--cyan)">furnace</div>
+        <div class="stat-sub">Schmelzofen weitergeleitet</div>
+      </div>
+    </section>
+
+    <section class="table-container">
+      <div class="table-head">
+        <h2>Durchgelaufene Chargen</h2>
+        <span id="refresh-time" style="font-size: 11px; color: var(--muted)">Aktualisiert: -</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Zeitpunkt</th>
+            <th>Batch ID</th>
+            <th>Material</th>
+            <th>Gewicht</th>
+            <th>Standort</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="material-rows">
+          <tr>
+            <td colspan="6" class="empty">Keine Materialien vorhanden.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    async function loadData() {
+      try {
+        const [statsRes, matRes] = await Promise.all([
+          fetch('/api/stats'),
+          fetch('/api/materials')
+        ]);
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('stat-total').textContent = stats.total_batches;
+          document.getElementById('stat-weight').textContent = new Intl.NumberFormat('de-DE').format(stats.total_weight_kg);
+          document.getElementById('stat-tonnes').textContent = `${stats.total_weight_tonnes} t`;
+          document.getElementById('db-dot').style.background = stats.db_connected ? 'var(--green)' : 'var(--red)';
+        }
+        if (matRes.ok) {
+          const materials = await matRes.json();
+          renderRows(materials);
+        }
+        document.getElementById('refresh-time').textContent = 'Aktualisiert: ' + new Date().toLocaleTimeString('de-DE');
+      } catch (e) {
+        document.getElementById('db-dot').style.background = 'var(--red)';
+      }
+    }
+
+    function renderRows(items) {
+      const tbody = document.getElementById('material-rows');
+      if (!items || !items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Noch keine Materialien durchgelaufen.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.map(m => `
+        <tr>
+          <td style="color: var(--muted)">${m.created_at || '-'}</td>
+          <td><span class="badge badge-cyan">${m.batch_id}</span></td>
+          <td style="font-weight: 600">${m.material}</td>
+          <td>${new Intl.NumberFormat('de-DE').format(m.weight_kg)} kg</td>
+          <td style="color: var(--cyan)">${m.location}</td>
+          <td><span class="badge badge-green">${m.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    loadData();
+    setInterval(loadData, 3000);
+  </script>
+</body>
+</html>
