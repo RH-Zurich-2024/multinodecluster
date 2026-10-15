@@ -26,7 +26,6 @@ spec:
       containers:
         - name: casting
           image: timozimmermann1/casting-service:latest 
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
               name: http
