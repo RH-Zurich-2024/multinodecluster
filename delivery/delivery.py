@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from io import BytesIO
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError, URLError
@@ -39,15 +40,21 @@ class DeliveryHandler(BaseHTTPRequestHandler):
             )
             with urlopen(request) as response:
                 if response.status < 200 or response.status >= 300:
+                    response_body = response.read()
                     raise HTTPError(
                         TRANSPORT_SERVICE_URL,
                         response.status,
                         "Transport service returned an error",
                         response.headers,
-                        None,
+                        BytesIO(response_body),
                     )
         except (HTTPError, URLError) as error:
-            self._send_json({"error": f"Transport service unavailable: {error}"}, 502)
+            error_message = str(error)
+            if isinstance(error, HTTPError):
+                response_body = error.read().decode("utf-8", errors="replace").strip()
+                if response_body:
+                    error_message = f"{error_message}: {response_body}"
+            self._send_json({"error": f"Transport service unavailable: {error_message}"}, 502)
             return
 
         self._send_json(data, 200)
