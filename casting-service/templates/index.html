@@ -55,16 +55,16 @@
 
       <div class="flex items-center space-x-3">
         <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
-          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
           <span class="font-medium">POST /cast bereit</span>
         </div>
 
-        <button onclick="fetchData()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5" title="Jetzt aktualisieren">
+        <button onclick="fetchData()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5 shadow" title="Jetzt manuell aktualisieren">
           <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
           <span>Aktualisieren</span>
         </button>
 
-        <button onclick="openConfigModal()" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium shadow-md shadow-orange-600/20 transition flex items-center space-x-1.5">
+        <button onclick="openConfigModal()" class="px-3.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium shadow-md shadow-orange-600/20 transition flex items-center space-x-1.5">
           <i class="fa-solid fa-sliders"></i>
           <span>Setup</span>
         </button>
@@ -107,7 +107,7 @@
           </div>
           <div class="text-orange-400 font-bold mt-1">4. Casting & Prüfung</div>
           <div class="text-[10px] text-orange-200 mt-0.5">"shape": "Barren"</div>
-          <div class="text-[9px] text-orange-300/80 mt-1">90% OK / 10% Reject</div>
+          <div class="text-[9px] text-orange-300/80 mt-1">Strengere Prüfung</div>
         </div>
         <!-- 5. Warehouse -->
         <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
@@ -172,11 +172,11 @@
       </div>
     </div>
 
-    <!-- Mittlerer Bereich: Interaktiver Prüf-Simulator & Live Log -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Mittlerer Bereich: Interaktiver Prüf-Simulator & Übersicht (2 Spalten, ohne Log) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-      <!-- Manuelle Test-Station / Simulator (1 Spalte) -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
+      <!-- Manuelle Test-Station / Simulator (Linke Spalte) -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
@@ -190,16 +190,16 @@
             Simuliere den Eingang geschmolzenen Metalls aus dem Schmelzofen, um den Guss- und Prüfablauf sofort live zu testen.
           </p>
 
-          <form id="test-batch-form" onsubmit="submitTestBatch(event)" class="space-y-3">
+          <form id="test-batch-form" onsubmit="submitTestBatch(event)" class="space-y-3.5">
             <div>
               <label class="block text-[11px] font-medium text-slate-300 mb-1">Batch ID</label>
-              <input type="text" id="input-batch-id" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500 font-mono" placeholder="z. B. MET-101" required>
+              <input type="text" id="input-batch-id" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-mono" placeholder="z. B. MET-101" required>
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-[11px] font-medium text-slate-300 mb-1">Material</label>
-                <select id="input-material" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500">
+                <select id="input-material" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
                   <option value="Eisen">Eisen</option>
                   <option value="Stahl">Stahl</option>
                   <option value="Kupfer">Kupfer</option>
@@ -208,18 +208,18 @@
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-slate-300 mb-1">Gewicht (kg)</label>
-                <input type="number" id="input-weight" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500" value="500" min="50" max="5000">
+                <input type="number" id="input-weight" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500" value="500" min="50" max="5000">
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-[11px] font-medium text-slate-300 mb-1">Temperatur (°C)</label>
-                <input type="number" id="input-temp" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-orange-500" value="1450">
+                <input type="number" id="input-temp" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500" value="1450">
               </div>
               <div>
                 <label class="block text-[11px] font-medium text-slate-300 mb-1">Vorheriger Status</label>
-                <input type="text" id="input-status" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 focus:outline-none" value="liquid" readonly>
+                <input type="text" id="input-status" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 focus:outline-none" value="liquid" readonly>
               </div>
             </div>
 
@@ -237,18 +237,52 @@
         </div>
       </div>
 
-      <!-- Live Terminal Activity Log (2 Spalten) -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-xl flex flex-col lg:col-span-2">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center space-x-2">
-            <span class="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Live Ereignis-Log</h2>
+      <!-- Info- und Prüfparameter-Panel (Rechte Spalte) -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl flex flex-col justify-between space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+              <i class="fa-solid fa-scale-balanced text-orange-400"></i>
+              <span>Qualitäts-Richtlinien & Pipeline-Regeln</span>
+            </h2>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Strengere Prüfung aktiv</span>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">Echtzeit HTTP Feed</span>
+
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-slate-200">Prüfquote (Pass-Wahrscheinlichkeit):</span>
+                <span id="info-pass-rate" class="font-bold text-orange-400">60%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden flex">
+                <div id="bar-pass" class="bg-emerald-500 h-full" style="width: 60%"></div>
+                <div id="bar-reject" class="bg-rose-500 h-full" style="width: 40%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-400 pt-0.5">
+                <span class="text-emerald-400">PASSED: ca. 60%</span>
+                <span class="text-rose-400 font-bold">REJECTED (Ausschuss): ca. 40%</span>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-2">
+              <div class="font-medium text-slate-200 flex items-center space-x-1.5">
+                <i class="fa-solid fa-right-left text-orange-400"></i>
+                <span>Pipeline-Transformation:</span>
+              </div>
+              <ul class="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
+                <li>Formt flüssiges Metall in feste <strong class="text-slate-200">"shape": "Barren"</strong></li>
+                <li>Führt Qualitätswürfelung durch (<strong class="text-emerald-400">PASSED</strong> oder <strong class="text-rose-400">REJECTED</strong>)</li>
+                <li>Leitet das Paket per POST an das Lager (<strong class="text-blue-400">Service 5: Warehouse</strong>) weiter</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div id="log-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-3 flex-1 overflow-y-auto max-h-72 font-mono text-[11px] space-y-1.5">
-          <div class="text-slate-500 italic">Warte auf eingehende Batches...</div>
+        <div class="pt-2">
+          <button onclick="openConfigModal()" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-sliders text-orange-400"></i>
+            <span>Prüfquote & Warehouse-URL anpassen</span>
+          </button>
         </div>
       </div>
     </div>
@@ -285,7 +319,7 @@
           </thead>
           <tbody id="batch-table-body" class="divide-y divide-slate-800/60 font-mono text-xs">
             <tr>
-              <td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Sende einen Request an POST /cast!</td>
+              <td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Klicke auf "Aktualisieren" oder sende einen Request an POST /cast!</td>
             </tr>
           </tbody>
         </table>
@@ -310,22 +344,26 @@
       <form id="config-form" onsubmit="saveConfig(event)" class="space-y-4 text-xs">
         <div>
           <label class="block font-medium text-slate-300 mb-1">
-            Qualitätsprüfung Pass-Rate: <span id="label-pass-prob" class="font-bold text-orange-400">90%</span>
+            Qualitätsprüfung Pass-Rate: <span id="label-pass-prob" class="font-bold text-orange-400">60%</span>
           </label>
-          <input type="range" id="cfg-pass-prob" min="0" max="100" value="90" class="w-full accent-orange-500 cursor-pointer" oninput="document.getElementById('label-pass-prob').innerText = this.value + '%'">
-          <p class="text-[10px] text-slate-400 mt-0.5">Wahrscheinlichkeit, dass ein gegossener Barren die Prüfung besteht (Standard: 90 % OK, 10 % REJECTED).</p>
+          <input type="range" id="cfg-pass-prob" min="0" max="100" value="60" class="w-full accent-orange-500 cursor-pointer" oninput="updateModalSlider(this.value)">
+          <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>0% (Nur Ausschuss)</span>
+            <span id="slider-reject-hint" class="text-rose-400 font-bold">Ausschuss: 40%</span>
+            <span>100% (Immer OK)</span>
+          </div>
         </div>
 
         <div>
           <label class="block font-medium text-slate-300 mb-1">Ziel Lager-Service URL (Warehouse)</label>
-          <input type="url" id="cfg-warehouse-url" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" placeholder="http://warehouse-service:5000/inventory" required>
+          <input type="url" id="cfg-warehouse-url" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" placeholder="http://warehouse:81/inventory" required>
           <p class="text-[10px] text-slate-400 mt-0.5">Endpunkt des nächsten Schritts (Service 5: Warehouse), an den fertige Barren per POST gesendet werden.</p>
         </div>
 
         <div>
           <label class="block font-medium text-slate-300 mb-1">Gießdauer Simulation (Sekunden)</label>
-          <input type="number" step="0.5" min="0" max="10" id="cfg-delay-sec" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" value="1.0">
-          <p class="text-[10px] text-slate-400 mt-0.5">Künstliche Verzögerung zur Veranschaulichung des Abkühlens (Standard: 1 Sekunde).</p>
+          <input type="number" step="0.1" min="0" max="10" id="cfg-delay-sec" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" value="0.5">
+          <p class="text-[10px] text-slate-400 mt-0.5">Künstliche Verzögerung zur Veranschaulichung des Abkühlens (Standard: 0.5 Sekunden).</p>
         </div>
 
         <div class="flex items-center space-x-2 pt-1">
@@ -367,7 +405,7 @@
     </div>
   </div>
 
-  <!-- Frontend JavaScript -->
+  <!-- Frontend JavaScript (KEIN automatisches Dauer-Polling mehr!) -->
   <script>
     let globalBatches = [];
 
@@ -377,15 +415,19 @@
 
     document.getElementById("input-batch-id").value = generateRandomBatchId();
 
+    function updateModalSlider(val) {
+      document.getElementById('label-pass-prob').innerText = val + '%';
+      document.getElementById('slider-reject-hint').innerText = 'Ausschuss: ' + (100 - val) + '%';
+    }
+
     async function fetchData() {
       const refreshIcon = document.getElementById("refresh-icon");
       if (refreshIcon) refreshIcon.classList.add("fa-spin");
 
       try {
-        const [statsRes, batchesRes, logsRes] = await Promise.all([
+        const [statsRes, batchesRes] = await Promise.all([
           fetch("/api/stats"),
-          fetch("/api/batches"),
-          fetch("/api/logs")
+          fetch("/api/batches")
         ]);
 
         if (statsRes.ok) {
@@ -396,11 +438,6 @@
         if (batchesRes.ok) {
           globalBatches = await batchesRes.json();
           renderBatches(globalBatches);
-        }
-
-        if (logsRes.ok) {
-          const logsData = await logsRes.json();
-          renderLogs(logsData);
         }
       } catch (err) {
         console.error("Fehler beim Laden der Daten:", err);
@@ -419,9 +456,21 @@
       document.getElementById("stat-forwarded").innerText = data.metrics.forwarded_to_warehouse;
       document.getElementById("stat-warehouse-url").innerText = data.config.warehouse_url;
 
+      const passProbPct = Math.round(data.config.pass_probability * 100);
+      const rejectProbPct = 100 - passProbPct;
+
+      const infoPass = document.getElementById("info-pass-rate");
+      if (infoPass) infoPass.innerText = passProbPct + "%";
+      
+      const barPass = document.getElementById("bar-pass");
+      if (barPass) barPass.style.width = passProbPct + "%";
+
+      const barReject = document.getElementById("bar-reject");
+      if (barReject) barReject.style.width = rejectProbPct + "%";
+
       // Modal Inputs vorbefüllen
-      document.getElementById("cfg-pass-prob").value = Math.round(data.config.pass_probability * 100);
-      document.getElementById("label-pass-prob").innerText = Math.round(data.config.pass_probability * 100) + "%";
+      document.getElementById("cfg-pass-prob").value = passProbPct;
+      updateModalSlider(passProbPct);
       document.getElementById("cfg-warehouse-url").value = data.config.warehouse_url;
       document.getElementById("cfg-delay-sec").value = data.config.simulate_delay_sec;
       document.getElementById("cfg-forward-rejected").checked = data.config.forward_rejected;
@@ -430,7 +479,7 @@
     function renderBatches(batches) {
       const tbody = document.getElementById("batch-table-body");
       if (!batches || batches.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Sende einen Request an POST /cast!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Klicke auf "Aktualisieren" oder sende einen Request an POST /cast!</td></tr>`;
         return;
       }
 
@@ -460,23 +509,6 @@
             </td>
           </tr>
         `;
-      }).join("");
-    }
-
-    function renderLogs(logs) {
-      const container = document.getElementById("log-container");
-      if (!logs || logs.length === 0) {
-        container.innerHTML = `<div class="text-slate-500 italic">Warte auf eingehende Batches...</div>`;
-        return;
-      }
-
-      container.innerHTML = logs.map(l => {
-        let color = "text-slate-300";
-        if (l.level === "SUCCESS") color = "text-emerald-400";
-        if (l.level === "WARN") color = "text-amber-400";
-        if (l.level === "ERROR") color = "text-rose-400";
-        
-        return `<div class="leading-relaxed"><span class="text-slate-500">[${l.timestamp}]</span> <span class="${color}">${l.message}</span></div>`;
       }).join("");
     }
 
@@ -580,9 +612,8 @@
       document.getElementById("json-modal").classList.add("hidden");
     }
 
-    // Initiales Laden und automatisches Polling alle 2.5 Sekunden
+    // Einmaliges Laden beim Öffnen der Seite (KEIN Dauer-Polling mehr!)
     fetchData();
-    setInterval(fetchData, 2500);
   </script>
 </body>
 </html>
