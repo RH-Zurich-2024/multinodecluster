@@ -6,8 +6,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY delivery.py ./delivery.py
+COPY index.html ./index.html
 
 EXPOSE 80
 
 CMD ["python3", "delivery.py"]
-

@@ -6,8 +6,8 @@ nodes:
       - containerPort: 30010
         hostPort: 30010
         protocol: TCP
-      - containerPort: 30030
-        hostPort: 30030
+      - containerPort: 30040
+        hostPort: 30040
         protocol: TCP
       - containerPort: 30050
         hostPort: 30050
