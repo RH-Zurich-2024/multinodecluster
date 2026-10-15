@@ -1,438 +1,944 @@
-<!DOCTYPE html>
-<html lang="de" class="dark">
+<!doctype html>
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Service 4: Casting & Qualitätsprüfung</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#fff7ed',
-              500: '#f97316',
-              600: '#ea580c',
-              700: '#c2410c',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FORGE — Casting</title>
   <style>
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.6)); }
-      50% { opacity: 0.8; filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.3)); }
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #101313;
+      --panel: #191d1c;
+      --line: #303634;
+      --muted: #909b95;
+      --lime: #d9ff79;
+      --red: #ff9785;
+      --amber: #f8c058;
+      --ink: #18210e;
     }
-    .glow-molten { animation: pulse-glow 3s infinite ease-in-out; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: #edf1e9;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--lime);
+      outline-offset: 4px;
+    }
+
+    /* Header */
+    header {
+      height: 86px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5vw;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .brand {
+      font: 700 25px 'Space Grotesk', sans-serif;
+      letter-spacing: 3px;
+    }
+    .brand span { color: var(--lime); }
+    .meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 14px #d9ff7970;
+    }
+    .dot.red { background: var(--red); box-shadow: 0 0 14px #ff978570; }
+    .dot.amber { background: var(--amber); box-shadow: 0 0 14px #f8c05870; }
+
+    .db-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      background: #151a18;
+    }
+    .db-badge.connected {
+      border-color: #d9ff7940;
+      color: var(--lime);
+    }
+
+    .btn-subtle {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: #edf1e9;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-subtle:hover {
+      border-color: var(--lime);
+      background: #d9ff790a;
+    }
+
+    .action-sm {
+      background: var(--lime);
+      color: var(--ink);
+      border: 0;
+      border-radius: 7px;
+      padding: 8px 15px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .action-sm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px #d9ff7925;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1440px;
+      margin: auto;
+      padding: 45px 5vw;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--lime);
+      text-transform: uppercase;
+    }
+    h1 {
+      font: 500 clamp(34px, 5vw, 62px) 'Space Grotesk', sans-serif;
+      margin: 12px 0;
+      letter-spacing: -2px;
+    }
+    .intro {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+    }
+    .action {
+      background: var(--lime);
+      border: 0;
+      border-radius: 8px;
+      padding: 14px 22px;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+      transition: transform .2s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .action:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px #d9ff7925;
+    }
+
+    /* Stats Grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 35px 0;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px;
+      background: var(--panel);
+      position: relative;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .number {
+      font: 500 36px 'Space Grotesk', sans-serif;
+      margin: 14px 0 6px;
+    }
+    .sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .green { color: var(--lime); }
+    .red { color: var(--red); }
+
+    /* Floor / Interactive Middle Grid */
+    .floor {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 35px;
+      background: var(--panel);
+    }
+
+    /* Simulator Panel (Left) */
+    .simulator {
+      padding: 32px;
+      background: #161b19;
+      border-right: 1px solid var(--line);
+      position: relative;
+    }
+    .simulator h2 {
+      font: 500 22px 'Space Grotesk', sans-serif;
+      margin: 8px 0 10px;
+    }
+    .simulator p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .input-field {
+      width: 100%;
+      background: #101413;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 12px;
+      color: #edf1e9;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .input-field.mono { font-family: 'JetBrains Mono', monospace; }
+    .submit-btn {
+      width: 100%;
+      background: var(--lime);
+      color: var(--ink);
+      border: 0;
+      border-radius: 7px;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 14px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px #d9ff7920;
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .sim-feedback {
+      margin-top: 15px;
+      padding: 12px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      line-height: 1.5;
+      display: none;
+      animation: fadeIn .3s;
+    }
+    .sim-feedback.visible { display: block; }
+    .sim-feedback.pass {
+      background: #d9ff7912;
+      border: 1px solid #d9ff7935;
+      color: var(--lime);
+    }
+    .sim-feedback.reject {
+      background: #ff978512;
+      border: 1px solid #ff978535;
+      color: var(--red);
+    }
+
+    /* Detail & Pipeline Panel (Right) */
+    .detail {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .detail h2 {
+      font: 500 22px 'Space Grotesk', sans-serif;
+      margin: 8px 0 12px;
+    }
+    .detail p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .pipeline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 24px 0;
+    }
+    .step {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 11px;
+      position: relative;
+    }
+    .step.active {
+      background: var(--lime);
+      color: var(--ink);
+      font-weight: 700;
+      border-color: var(--lime);
+      box-shadow: 0 0 25px #d9ff7930;
+    }
+    .step-label {
+      position: absolute;
+      top: 36px;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      color: var(--muted);
+    }
+    .step.active .step-label { color: var(--lime); font-weight: 600; }
+    .connector {
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+    }
+
+    .rules-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #141816;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .rules-card b { color: #edf1e9; }
+    .prob-bar {
+      height: 5px;
+      border-radius: 3px;
+      display: flex;
+      overflow: hidden;
+      margin: 8px 0 4px;
+      background: var(--line);
+    }
+    .prob-pass { background: var(--lime); width: 60%; }
+    .prob-reject { background: var(--red); width: 40%; }
+
+    /* Table Section */
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 15px;
+    }
+    .table-head h2 {
+      font: 500 20px 'Space Grotesk', sans-serif;
+      margin: 0;
+    }
+    .search {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: #fff;
+      padding: 11px 14px;
+      width: 260px;
+      font-size: 12px;
+    }
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 15px 0;
+      gap: 10px;
+    }
+    .filter-group {
+      display: flex;
+      gap: 6px;
+    }
+    .filter {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 13px;
+      transition: all .2s;
+    }
+    .filter.active {
+      color: var(--lime);
+      border-color: #d9ff7950;
+      background: #d9ff790c;
+    }
+    .btn-danger-link {
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 5px 8px;
+      transition: color .2s;
+    }
+    .btn-danger-link:hover { color: var(--red); }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 1px;
+      background: #141817;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    td {
+      padding: 16px 18px;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+    }
+    tbody tr:hover {
+      background: #d9ff7906;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      border-radius: 5px;
+      padding: 4px 8px;
+      background: #d9ff7912;
+      color: var(--lime);
+      border: 1px solid #d9ff7930;
+      font-weight: 500;
+    }
+    .badge.bad {
+      color: var(--red);
+      background: #ff978512;
+      border-color: #ff978530;
+    }
+
+    .btn-cell-json {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all .2s;
+    }
+    .btn-cell-json:hover {
+      color: var(--lime);
+      border-color: var(--lime);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 45px 20px;
+      line-height: 1.8;
+      font-size: 13px;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      margin: 18px 0;
+    }
+
+    /* Modal System */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 9, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 540px;
+      padding: 28px;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7);
+      transform: translateY(20px);
+      transition: transform .25s ease;
+    }
+    .modal-backdrop.open .modal-card {
+      transform: translateY(0);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .modal-head h3 {
+      font: 500 18px 'Space Grotesk', sans-serif;
+      margin: 0;
+    }
+    .close-btn {
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+      padding: 4px;
+    }
+    .close-btn:hover { color: #fff; }
+
+    .range-box {
+      margin-bottom: 18px;
+    }
+    .range-box label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+    .range-box label span {
+      color: var(--lime);
+      font-weight: 700;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--lime);
+      cursor: pointer;
+    }
+    .range-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0;
+      font-size: 12px;
+    }
+    .checkbox-row input {
+      accent-color: var(--lime);
+      width: 16px;
+      height: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    /* JSON Modal */
+    .json-pre {
+      background: #111514;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      color: #9fe2bf;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      max-height: 250px;
+      overflow: auto;
+      margin-top: 6px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      max-width: 360px;
+      background: var(--lime);
+      color: var(--ink);
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      transition: transform .3s, opacity .3s;
+      transform: translateY(100px);
+      opacity: 0;
+      z-index: 200;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 860px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .floor { grid-template-columns: 1fr; }
+      .simulator { border-right: 0; border-bottom: 1px solid var(--line); }
+      .top { flex-direction: column; align-items: flex-start; }
+      .meta .hide { display: none; }
+      .table-head { flex-direction: column; align-items: flex-start; }
+      .filters { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-orange-500 selection:text-white">
+<body>
 
-  <!-- Oberer Navigationsbalken -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-          <i class="fa-solid fa-cube text-lg"></i>
-        </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">Service 4 / 5</span>
-            <h1 class="text-lg font-bold tracking-tight text-white">Casting & Qualitätsprüfung</h1>
-          </div>
-          <p class="text-xs text-slate-400">Gießerei, Barren-Formung & Qualitätskontrolle</p>
-        </div>
-      </div>
-
-      <div class="flex items-center space-x-3">
-        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
-          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          <span class="font-medium">POST /cast bereit</span>
-        </div>
-
-        <div id="db-badge" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs">
-          <i class="fa-solid fa-database text-xs"></i>
-          <span id="db-status-text">PostgreSQL: Prüfe...</span>
-        </div>
-
-        <button onclick="fetchData()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-1.5 shadow" title="Jetzt manuell aktualisieren">
-          <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
-          <span>Aktualisieren</span>
-        </button>
-
-        <button onclick="openConfigModal()" class="px-3.5 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium shadow-md shadow-orange-600/20 transition flex items-center space-x-1.5">
-          <i class="fa-solid fa-sliders"></i>
-          <span>Setup</span>
-        </button>
-      </div>
+  <!-- Header -->
+  <header>
+    <div class="brand">F<span>◈</span>RGE</div>
+    <div class="meta">
+      <span class="hide">FACTORY SYSTEMS / CASTING 04</span>
+      <span class="dot" id="dot"></span>
+      <span id="connection" role="status">Casting Service Online</span>
+      <span class="db-badge" id="db-indicator">PostgreSQL: Prüfe...</span>
+      <button class="btn-subtle" onclick="fetchData()" id="btn-refresh" title="Manuell aktualisieren">↻ Aktualisieren</button>
+      <button class="action-sm" onclick="openConfigModal()">⚙ Setup</button>
     </div>
   </header>
 
-  <!-- Hauptinhalt -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-    <!-- Pipeline Visualisierung Stepper -->
-    <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 shadow-xl">
-      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
-        <span>Gesamte Fabrik-Pipeline Ablauf</span>
-        <span class="text-slate-500 font-normal">HTTP REST Kette</span>
+  <main>
+    <!-- Top Hero Section -->
+    <div class="top">
+      <div>
+        <div class="eyebrow">04 / Casting & Qualitätsprüfung</div>
+        <h1>Metall. Geformt. Geprüft.</h1>
+        <div class="intro">
+          Flüssiges Metall aus dem Schmelzofen wird in Barrenform gegossen und einer strengen Qualitätsprüfung unterzogen. Nur fehlerfreie Batches passieren ins Lager.
+        </div>
       </div>
-      <div class="grid grid-cols-5 gap-2 text-center text-xs">
-        <!-- 1. Delivery -->
-        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
-          <div class="text-slate-400 font-medium">1. Delivery</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">POST /deliver</div>
-          <div class="text-[9px] text-slate-500 mt-1">Startpunkt</div>
-        </div>
-        <!-- 2. Transport -->
-        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
-          <div class="text-slate-400 font-medium">2. Transport</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Sleep 2s</div>
-          <div class="text-[9px] text-slate-500 mt-1">Logistik</div>
-        </div>
-        <!-- 3. Smelting -->
-        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
-          <div class="text-slate-400 font-medium">3. Smelting</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">1450°C liquid</div>
-          <div class="text-[9px] text-slate-500 mt-1">Schmelzofen</div>
-        </div>
-        <!-- 4. Casting (Active) -->
-        <div class="p-2.5 rounded-xl bg-gradient-to-b from-orange-500/20 to-amber-600/10 border-2 border-orange-500 glow-molten relative">
-          <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-orange-500 text-slate-950 font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
-            Dieser Service
+      <div>
+        <button class="action" onclick="focusTestForm()">＋ Test-Batch gießen</button>
+      </div>
+    </div>
+
+    <!-- 4 KPI Metrics -->
+    <section class="stats" aria-label="Kennzahlen-Übersicht">
+      <div class="stat">
+        <div class="label">Verarbeitet Gesamt</div>
+        <div class="number" id="stat-total">0</div>
+        <div class="sub">Empfangen via POST /cast</div>
+      </div>
+      <div class="stat">
+        <div class="label">Qualität Bestanden</div>
+        <div class="number green" id="stat-passed">0</div>
+        <div class="sub">Erfolgsquote: <span id="stat-pass-rate" class="green">0%</span></div>
+      </div>
+      <div class="stat">
+        <div class="label">Zurückgewiesen (Ausschuss)</div>
+        <div class="number red" id="stat-rejected">0</div>
+        <div class="sub">Aussortiert / Recycling</div>
+      </div>
+      <div class="stat">
+        <div class="label">An Lager gesendet</div>
+        <div class="number" id="stat-forwarded">0</div>
+        <div class="sub" id="stat-warehouse-url">Lager-Endpunkt aktiv</div>
+      </div>
+    </section>
+
+    <!-- Interactive Middle Area (Floor) -->
+    <section class="floor">
+      <!-- Left: Test / Casting Station Simulator -->
+      <div class="simulator">
+        <div class="eyebrow">Test-Station</div>
+        <h2>Charge manuell gießen</h2>
+        <p>Simuliere den Eingang flüssigen Metalls (Schmelzofen), um den Gießvorgang, die Barrenformung und die Qualitätsprüfung live zu testen.</p>
+
+        <form id="test-form" onsubmit="submitTestBatch(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-batch-id">Batch-ID</label>
+              <input type="text" id="input-batch-id" class="input-field mono" placeholder="z. B. MET-101" required>
+            </div>
+            <div class="form-group">
+              <label for="input-material">Material</label>
+              <select id="input-material" class="input-field">
+                <option value="Eisen">Eisen</option>
+                <option value="Stahl">Stahl</option>
+                <option value="Kupfer">Kupfer</option>
+                <option value="Aluminium">Aluminium</option>
+              </select>
+            </div>
           </div>
-          <div class="text-orange-400 font-bold mt-1">4. Casting & Prüfung</div>
-          <div class="text-[10px] text-orange-200 mt-0.5">"shape": "Barren"</div>
-          <div class="text-[9px] text-orange-300/80 mt-1">Strengere Prüfung</div>
-        </div>
-        <!-- 5. Warehouse -->
-        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-800 opacity-70">
-          <div class="text-slate-400 font-medium">5. Warehouse</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">GET /inventory</div>
-          <div class="text-[9px] text-slate-500 mt-1">Endstation</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- KPI / Metriken Kacheln -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Total -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
-        <div class="absolute right-3 top-3 text-slate-800 text-4xl group-hover:text-slate-700 transition">
-          <i class="fa-solid fa-boxes-stacked"></i>
-        </div>
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Verarbeitet Gesamt</p>
-        <p id="stat-total" class="text-3xl font-extrabold text-white mt-1">0</p>
-        <div class="text-xs text-slate-400 mt-2 flex items-center space-x-1">
-          <i class="fa-solid fa-arrow-down text-slate-500"></i>
-          <span>Über <code class="text-slate-300">POST /cast</code> empfangen</span>
-        </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-weight">Gewicht / kg</label>
+              <input type="number" id="input-weight" class="input-field" value="500" min="10" max="5000" required>
+            </div>
+            <div class="form-group">
+              <label for="input-temp">Temperatur / °C</label>
+              <input type="number" id="input-temp" class="input-field" value="1450" required>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-test" class="submit-btn">⚒ Gießen & Prüfen auslösen</button>
+          <div id="sim-feedback" class="sim-feedback" role="status"></div>
+        </form>
       </div>
 
-      <!-- Passed -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
-        <div class="absolute right-3 top-3 text-emerald-950 text-4xl group-hover:text-emerald-900 transition">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Qualitätsprüfung: PASSED</p>
-        <p id="stat-passed" class="text-3xl font-extrabold text-emerald-400 mt-1">0</p>
-        <div class="text-xs text-slate-400 mt-2 flex items-center space-x-1.5">
-          <span id="stat-pass-rate" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-xs">0%</span>
-          <span>Erfolgsquote</span>
-        </div>
-      </div>
-
-      <!-- Rejected -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
-        <div class="absolute right-3 top-3 text-rose-950 text-4xl group-hover:text-rose-900 transition">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </div>
-        <p class="text-xs font-medium text-rose-400 uppercase tracking-wider">Qualitätsprüfung: REJECTED</p>
-        <p id="stat-rejected" class="text-3xl font-extrabold text-rose-400 mt-1">0</p>
-        <div class="text-xs text-slate-400 mt-2">
-          <span>Ausschuss / Qualitätsmangel</span>
-        </div>
-      </div>
-
-      <!-- Forwarded to Warehouse -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-lg relative overflow-hidden group">
-        <div class="absolute right-3 top-3 text-blue-950 text-4xl group-hover:text-blue-900 transition">
-          <i class="fa-solid fa-warehouse"></i>
-        </div>
-        <p class="text-xs font-medium text-blue-400 uppercase tracking-wider">An Lager Gesendet</p>
-        <p id="stat-forwarded" class="text-3xl font-extrabold text-blue-400 mt-1">0</p>
-        <div class="text-xs text-slate-400 mt-2 truncate flex items-center space-x-1">
-          <i class="fa-solid fa-paper-plane text-blue-400"></i>
-          <span id="stat-warehouse-url" class="truncate" title="Warehouse URL">...</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mittlerer Bereich: Interaktiver Prüf-Simulator & Übersicht (2 Spalten, ohne Log) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- Manuelle Test-Station / Simulator (Linke Spalte) -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+      <!-- Right: Station Detail & Pipeline Stepper -->
+      <div class="detail">
         <div>
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-              <i class="fa-solid fa-flask-vial text-orange-400"></i>
-              <span>Test-Batch simulieren</span>
-            </h2>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Simuliert Smelting 3</span>
-          </div>
-
-          <p class="text-xs text-slate-400 mb-4">
-            Simuliere den Eingang geschmolzenen Metalls aus dem Schmelzofen, um den Guss- und Prüfablauf sofort live zu testen.
+          <div class="eyebrow">Vom Ofen in die Gussform</div>
+          <h2>Schritt 04.<br>Casting & Qualitätsprüfung.</h2>
+          <p>
+            Eingehende Schmelzen werden mit dem Attribut <code>"shape": "Barren"</code> angereichert. Ein interner Zufallsalgorithmus entscheidet über Bestehen oder Ausschuss. Alle Datenpunkte werden in der zentralen PostgreSQL-Datenbank hinterlegt.
           </p>
 
-          <form id="test-batch-form" onsubmit="submitTestBatch(event)" class="space-y-3.5">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-300 mb-1">Batch ID</label>
-              <input type="text" id="input-batch-id" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-mono" placeholder="z. B. MET-101" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] font-medium text-slate-300 mb-1">Material</label>
-                <select id="input-material" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-orange-500">
-                  <option value="Eisen">Eisen</option>
-                  <option value="Stahl">Stahl</option>
-                  <option value="Kupfer">Kupfer</option>
-                  <option value="Aluminium">Aluminium</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-slate-300 mb-1">Gewicht (kg)</label>
-                <input type="number" id="input-weight" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500" value="500" min="50" max="5000">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] font-medium text-slate-300 mb-1">Temperatur (°C)</label>
-                <input type="number" id="input-temp" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500" value="1450">
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-slate-300 mb-1">Vorheriger Status</label>
-                <input type="text" id="input-status" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 focus:outline-none" value="liquid" readonly>
-              </div>
-            </div>
-
-            <div class="pt-2">
-              <button type="submit" id="btn-submit-test" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold text-xs shadow-lg shadow-orange-500/20 transition flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-hammer"></i>
-                <span>Gießen & Prüfen auslösen</span>
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div id="sim-status" class="hidden mt-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-          <!-- Dynamischer Status des letzten Tests -->
-        </div>
-      </div>
-
-      <!-- Info- und Prüfparameter-Panel (Rechte Spalte) -->
-      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-xl flex flex-col justify-between space-y-4">
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-              <i class="fa-solid fa-scale-balanced text-orange-400"></i>
-              <span>Qualitäts-Richtlinien & Pipeline-Regeln</span>
-            </h2>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Strengere Prüfung aktiv</span>
-          </div>
-
-          <div class="space-y-3 text-xs text-slate-300">
-            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="font-medium text-slate-200">Prüfquote (Pass-Wahrscheinlichkeit):</span>
-                <span id="info-pass-rate" class="font-bold text-orange-400">60%</span>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden flex">
-                <div id="bar-pass" class="bg-emerald-500 h-full" style="width: 60%"></div>
-                <div id="bar-reject" class="bg-rose-500 h-full" style="width: 40%"></div>
-              </div>
-              <div class="flex justify-between text-[10px] text-slate-400 pt-0.5">
-                <span class="text-emerald-400">PASSED: ca. 60%</span>
-                <span class="text-rose-400 font-bold">REJECTED (Ausschuss): ca. 40%</span>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-2">
-              <div class="font-medium text-slate-200 flex items-center space-x-1.5">
-                <i class="fa-solid fa-right-left text-orange-400"></i>
-                <span>Pipeline-Transformation:</span>
-              </div>
-              <ul class="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
-                <li>Formt flüssiges Metall in feste <strong class="text-slate-200">"shape": "Barren"</strong></li>
-                <li>Führt Qualitätswürfelung durch (<strong class="text-emerald-400">PASSED</strong> oder <strong class="text-rose-400">REJECTED</strong>)</li>
-                <li>Leitet das Paket per POST an das Lager (<strong class="text-blue-400">Service 5: Warehouse</strong>) weiter</li>
-              </ul>
-            </div>
+          <!-- Pipeline Stepper -->
+          <div class="pipeline" aria-label="Station 4 von 5">
+            <span class="step" title="Delivery">01<span class="step-label">Delivery</span></span>
+            <i class="connector"></i>
+            <span class="step" title="Transport">02<span class="step-label">Transport</span></span>
+            <i class="connector"></i>
+            <span class="step" title="Smelting">03<span class="step-label">Smelting</span></span>
+            <i class="connector"></i>
+            <span class="step active" title="Casting">04<span class="step-label">Casting</span></span>
+            <i class="connector"></i>
+            <span class="step" title="Warehouse">05<span class="step-label">Warehouse</span></span>
           </div>
         </div>
 
-        <div class="pt-2">
-          <button onclick="openConfigModal()" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-sliders text-orange-400"></i>
-            <span>Prüfquote & Warehouse-URL anpassen</span>
-          </button>
+        <div class="rules-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Prüf-Verteilung (aktuell):</span>
+            <span id="rules-pass-text" style="color:var(--lime); font-weight:700;">60% OK / 40% Ausschuss</span>
+          </div>
+          <div class="prob-bar">
+            <div class="prob-pass" id="rules-bar-pass"></div>
+            <div class="prob-reject" id="rules-bar-reject"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; margin-top:4px;">
+            <span>● PASSED → Lager</span>
+            <span style="color:var(--red);">● REJECTED → Ausgemustert</span>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Tabelle der letzten Prüfungen -->
-    <div class="rounded-2xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden">
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-        <div>
-          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-            <i class="fa-solid fa-list-check text-orange-400"></i>
-            <span>Verarbeitete Batches & Prüfprotokoll</span>
-          </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Chronologischer Verlauf aller gegossenen Barren</p>
-        </div>
-        <button onclick="resetStats()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center space-x-1">
-          <i class="fa-solid fa-trash-can"></i>
-          <span>Historie leeren</span>
-        </button>
+    <!-- Table Section -->
+    <section>
+      <div class="table-head">
+        <h2>Verarbeitete Chargen <span class="label" id="table-count"></span></h2>
+        <input class="search" id="search" aria-label="Chargen durchsuchen" placeholder="⌕  Charge oder Material suchen">
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-slate-950/70 border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-semibold">
+      <div class="filters">
+        <div class="filter-group" aria-label="Filter nach Qualität">
+          <button class="filter active" data-filter="ALL">Alle Chargen</button>
+          <button class="filter" data-filter="PASSED">● Bestanden</button>
+          <button class="filter" data-filter="REJECTED">● Zurückgewiesen</button>
+        </div>
+        <button class="btn-danger-link" onclick="resetStats()">🗑 Historie leeren</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
             <tr>
-              <th class="py-3 px-4">Zeit</th>
-              <th class="py-3 px-4">Batch ID</th>
-              <th class="py-3 px-4">Material</th>
-              <th class="py-3 px-4">Gewicht</th>
-              <th class="py-3 px-4">Form ("shape")</th>
-              <th class="py-3 px-4">Qualitätsprüfung</th>
-              <th class="py-3 px-4">Lager-Status</th>
-              <th class="py-3 px-4 text-right">Details</th>
+              <th>CHARGE</th>
+              <th>MATERIAL</th>
+              <th>GEWICHT</th>
+              <th>FORM</th>
+              <th>QUALITÄT</th>
+              <th>LAGER-STATUS</th>
+              <th>ZEITPUNKT</th>
+              <th>DATEN</th>
             </tr>
           </thead>
-          <tbody id="batch-table-body" class="divide-y divide-slate-800/60 font-mono text-xs">
-            <tr>
-              <td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Klicke auf "Aktualisieren" oder sende einen Request an POST /cast!</td>
-            </tr>
-          </tbody>
+          <tbody id="batch-rows"></tbody>
         </table>
       </div>
-    </div>
 
+      <div class="footer">
+        <span id="updated-status">Warte auf ersten Abruf …</span>
+        <span>FORGE / CASTING & INSPECTION SERVICE</span>
+      </div>
+    </section>
   </main>
 
-  <!-- Konfigurations-Modal -->
-  <div id="config-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center space-x-2">
-          <i class="fa-solid fa-sliders text-orange-400"></i>
-          <span>Service 4 Konfiguration</span>
-        </h3>
-        <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+  <!-- Setup / Configuration Modal -->
+  <div class="modal-backdrop" id="config-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Service 4 Konfiguration</h3>
+        <button class="close-btn" onclick="closeConfigModal()">✕</button>
       </div>
 
-      <form id="config-form" onsubmit="saveConfig(event)" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-medium text-slate-300 mb-1">
-            Qualitätsprüfung Pass-Rate: <span id="label-pass-prob" class="font-bold text-orange-400">60%</span>
+      <form id="config-form" onsubmit="saveConfig(event)">
+        <div class="range-box">
+          <label for="cfg-pass-prob">
+            <span>Pass-Quote (Erfolgsrate):</span>
+            <span id="cfg-pass-label">60%</span>
           </label>
-          <input type="range" id="cfg-pass-prob" min="0" max="100" value="60" class="w-full accent-orange-500 cursor-pointer" oninput="updateModalSlider(this.value)">
-          <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+          <input type="range" id="cfg-pass-prob" min="0" max="100" value="60" oninput="updateSliderUI(this.value)">
+          <div class="range-legend">
             <span>0% (Nur Ausschuss)</span>
-            <span id="slider-reject-hint" class="text-rose-400 font-bold">Ausschuss: 40%</span>
-            <span>100% (Immer OK)</span>
+            <span id="cfg-reject-hint" style="color:var(--red);">Ausschuss: 40%</span>
+            <span>100% (Alle OK)</span>
           </div>
         </div>
 
-        <div>
-          <label class="block font-medium text-slate-300 mb-1">Ziel Lager-Service URL (Warehouse)</label>
-          <input type="url" id="cfg-warehouse-url" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" placeholder="http://warehouse:81/inventory" required>
-          <p class="text-[10px] text-slate-400 mt-0.5">Endpunkt des nächsten Schritts (Service 5: Warehouse), an den fertige Barren per POST gesendet werden.</p>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="cfg-warehouse-url" style="font-size:11px; color:var(--muted); display:block; margin-bottom:6px;">Lager Ziel-URL (Warehouse)</label>
+          <input type="url" id="cfg-warehouse-url" class="input-field mono" placeholder="http://warehouse:81/inventory" required>
         </div>
 
-        <div>
-          <label class="block font-medium text-slate-300 mb-1">Gießdauer Simulation (Sekunden)</label>
-          <input type="number" step="0.1" min="0" max="10" id="cfg-delay-sec" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-orange-500" value="0.5">
-          <p class="text-[10px] text-slate-400 mt-0.5">Künstliche Verzögerung zur Veranschaulichung des Abkühlens (Standard: 0.5 Sekunden).</p>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="cfg-delay-sec" style="font-size:11px; color:var(--muted); display:block; margin-bottom:6px;">Simulierte Abkühlzeit (Sekunden)</label>
+          <input type="number" step="0.1" min="0" max="10" id="cfg-delay-sec" class="input-field mono" value="0.5">
         </div>
 
-        <div class="flex items-center space-x-2 pt-1">
-          <input type="checkbox" id="cfg-forward-rejected" class="accent-orange-500 h-4 w-4 rounded border-slate-800">
-          <label for="cfg-forward-rejected" class="text-slate-300 font-medium">Ausschuss (REJECTED) trotzdem an Lager senden</label>
+        <div class="checkbox-row">
+          <input type="checkbox" id="cfg-forward-rejected">
+          <label for="cfg-forward-rejected" style="color: #edf1e9;">Ausschuss (REJECTED) trotzdem an Lager senden</label>
         </div>
 
-        <div class="pt-3 border-t border-slate-800 flex justify-end space-x-2">
-          <button type="button" onclick="closeConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium">Abbrechen</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold shadow-md shadow-orange-600/20">Speichern</button>
+        <div class="modal-actions">
+          <button type="button" class="btn-subtle" onclick="closeConfigModal()">Abbrechen</button>
+          <button type="submit" class="action-sm">Speichern</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- JSON Detail-Modal -->
-  <div id="json-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 id="json-modal-title" class="text-sm font-bold text-white flex items-center space-x-2">
-          <i class="fa-solid fa-code text-orange-400"></i>
-          <span>Batch Datenpaket</span>
-        </h3>
-        <button onclick="closeJsonModal()" class="text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+  <!-- JSON Inspection Modal -->
+  <div class="modal-backdrop" id="json-modal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-head">
+        <h3 id="json-modal-title">Batch Payload</h3>
+        <button class="close-btn" onclick="closeJsonModal()">✕</button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <span class="text-slate-400 font-semibold block mb-1">Ausgehendes JSON an Warehouse (Service 5):</span>
-          <pre id="json-modal-output" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-400 font-mono text-[11px] overflow-x-auto"></pre>
-        </div>
-        <div>
-          <span class="text-slate-400 font-semibold block mb-1">Ursprüngliches Eingangs-JSON aus Schmelzofen (Service 3):</span>
-          <pre id="json-modal-input" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-300 font-mono text-[11px] overflow-x-auto"></pre>
-        </div>
+      <div style="font-size: 12px;">
+        <span style="color: var(--muted); font-size:11px; font-weight:600;">Ausgehendes JSON an Lager-Service (Warehouse):</span>
+        <pre class="json-pre" id="json-modal-out"></pre>
+      </div>
+
+      <div style="font-size: 12px; margin-top: 14px;">
+        <span style="color: var(--muted); font-size:11px; font-weight:600;">Eingangsdaten aus Schmelzofen (Smelting):</span>
+        <pre class="json-pre" id="json-modal-in" style="color: #cbd5e1;"></pre>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-subtle" onclick="closeJsonModal()">Schließen</button>
       </div>
     </div>
   </div>
 
-  <!-- Frontend JavaScript (KEIN automatisches Dauer-Polling mehr!) -->
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="status"></div>
+
   <script>
-    let globalBatches = [];
+    let items = [];
+    let activeFilter = 'ALL';
+    const num = new Intl.NumberFormat('de-DE');
+
+    function $(id) { return document.getElementById(id); }
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
 
     function generateRandomBatchId() {
       return "MET-" + Math.floor(100 + Math.random() * 900);
     }
 
-    document.getElementById("input-batch-id").value = generateRandomBatchId();
+    $('input-batch-id').value = generateRandomBatchId();
 
-    function updateModalSlider(val) {
-      document.getElementById('label-pass-prob').innerText = val + '%';
-      document.getElementById('slider-reject-hint').innerText = 'Ausschuss: ' + (100 - val) + '%';
+    function focusTestForm() {
+      $('input-batch-id').focus();
+      $('input-batch-id').select();
+    }
+
+    function updateSliderUI(val) {
+      $('cfg-pass-label').textContent = val + '%';
+      $('cfg-reject-hint').textContent = 'Ausschuss: ' + (100 - val) + '%';
     }
 
     async function fetchData() {
-      const refreshIcon = document.getElementById("refresh-icon");
-      if (refreshIcon) refreshIcon.classList.add("fa-spin");
+      const btn = $('btn-refresh');
+      btn.textContent = 'Lade …';
 
       try {
         const [statsRes, batchesRes] = await Promise.all([
-          fetch("/api/stats"),
-          fetch("/api/batches")
+          fetch('/api/stats', { cache: 'no-store' }),
+          fetch('/api/batches', { cache: 'no-store' })
         ]);
 
         if (statsRes.ok) {
@@ -441,195 +947,262 @@
         }
 
         if (batchesRes.ok) {
-          globalBatches = await batchesRes.json();
-          renderBatches(globalBatches);
+          items = await batchesRes.json();
+          renderRows();
         }
+
+        $('connection').textContent = 'Casting Service Online';
+        $('dot').className = 'dot';
+        $('updated-status').textContent = 'Letzter Abruf: ' + new Date().toLocaleTimeString('de-DE');
       } catch (err) {
-        console.error("Fehler beim Laden der Daten:", err);
+        console.error("Fehler beim Abrufen:", err);
+        $('connection').textContent = 'Verbindung unterbrochen';
+        $('dot').className = 'dot red';
+        $('updated-status').textContent = 'Abruf fehlgeschlagen · Bitte erneut versuchen';
       } finally {
-        if (refreshIcon) {
-          setTimeout(() => refreshIcon.classList.remove("fa-spin"), 500);
-        }
+        btn.textContent = '↻ Aktualisieren';
       }
     }
 
     function renderStats(data) {
-      document.getElementById("stat-total").innerText = data.metrics.total;
-      document.getElementById("stat-passed").innerText = data.metrics.passed;
-      document.getElementById("stat-rejected").innerText = data.metrics.rejected;
-      document.getElementById("stat-pass-rate").innerText = data.metrics.pass_rate_percent + "%";
-      document.getElementById("stat-forwarded").innerText = data.metrics.forwarded_to_warehouse;
-      document.getElementById("stat-warehouse-url").innerText = data.config.warehouse_url;
+      const m = data.metrics;
+      const c = data.config;
 
-      const dbBadge = document.getElementById("db-badge");
-      const dbStatusText = document.getElementById("db-status-text");
-      if (dbBadge && dbStatusText && data.config) {
-        if (data.config.db_connected) {
-          dbBadge.className = "hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs";
-          dbStatusText.innerText = "PostgreSQL: Verbunden";
-        } else {
-          dbBadge.className = "hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs";
-          dbStatusText.innerText = "PostgreSQL: Offline (Speicher-Modus)";
-        }
+      $('stat-total').textContent = num.format(m.total);
+      $('stat-passed').textContent = num.format(m.passed);
+      $('stat-rejected').textContent = num.format(m.rejected);
+      $('stat-pass-rate').textContent = m.pass_rate_percent + '%';
+      $('stat-forwarded').textContent = num.format(m.forwarded_to_warehouse);
+      $('stat-warehouse-url').textContent = 'Ziel: ' + c.warehouse_url;
+
+      // DB Badge
+      const dbBadge = $('db-indicator');
+      if (c.db_connected) {
+        dbBadge.className = 'db-badge connected';
+        dbBadge.textContent = 'PostgreSQL: Verbunden';
+      } else {
+        dbBadge.className = 'db-badge';
+        dbBadge.textContent = 'PostgreSQL: In-Memory Modus';
       }
 
-      const passProbPct = Math.round(data.config.pass_probability * 100);
-      const rejectProbPct = 100 - passProbPct;
-
-      const infoPass = document.getElementById("info-pass-rate");
-      if (infoPass) infoPass.innerText = passProbPct + "%";
-      
-      const barPass = document.getElementById("bar-pass");
-      if (barPass) barPass.style.width = passProbPct + "%";
-
-      const barReject = document.getElementById("bar-reject");
-      if (barReject) barReject.style.width = rejectProbPct + "%";
+      // Rules Card
+      const passPct = Math.round(c.pass_probability * 100);
+      const rejectPct = 100 - passPct;
+      $('rules-pass-text').textContent = passPct + '% OK / ' + rejectPct + '% Ausschuss';
+      $('rules-bar-pass').style.width = passPct + '%';
+      $('rules-bar-reject').style.width = rejectPct + '%';
 
       // Modal Inputs vorbefüllen
-      document.getElementById("cfg-pass-prob").value = passProbPct;
-      updateModalSlider(passProbPct);
-      document.getElementById("cfg-warehouse-url").value = data.config.warehouse_url;
-      document.getElementById("cfg-delay-sec").value = data.config.simulate_delay_sec;
-      document.getElementById("cfg-forward-rejected").checked = data.config.forward_rejected;
+      $('cfg-pass-prob').value = passPct;
+      updateSliderUI(passPct);
+      $('cfg-warehouse-url').value = c.warehouse_url;
+      $('cfg-delay-sec').value = c.simulate_delay_sec;
+      $('cfg-forward-rejected').checked = c.forward_rejected;
     }
 
-    function renderBatches(batches) {
-      const tbody = document.getElementById("batch-table-body");
-      if (!batches || batches.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-500 italic">Noch keine Batches verarbeitet. Klicke auf "Aktualisieren" oder sende einen Request an POST /cast!</td></tr>`;
+    function renderRows() {
+      const query = $('search').value.toLowerCase().trim();
+      const visible = items.filter(x => {
+        const matchesFilter = activeFilter === 'ALL' || x.quality === activeFilter;
+        const matchesQuery = !query || 
+          (x.batch_id && x.batch_id.toLowerCase().includes(query)) ||
+          (x.material && x.material.toLowerCase().includes(query));
+        return matchesFilter && matchesQuery;
+      });
+
+      $('table-count').textContent = ' / ' + items.length;
+      const tbody = $('batch-rows');
+      tbody.replaceChildren();
+
+      if (!visible.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 8;
+        td.className = 'empty';
+        td.textContent = items.length 
+          ? 'Keine passenden Chargen gefunden.' 
+          : 'Noch keine Chargen gegossen. Sende einen Request an POST /cast oder nutze die Test-Station!';
+        tr.append(td);
+        tbody.append(tr);
         return;
       }
 
-      tbody.innerHTML = batches.map((b, idx) => {
-        const isPassed = b.quality === "PASSED";
-        const badgeClass = isPassed 
-          ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" 
-          : "bg-rose-500/20 text-rose-400 border-rose-500/30";
-        
-        return `
-          <tr class="hover:bg-slate-800/40 transition">
-            <td class="py-2.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">${b.timestamp.split(" ")[1] || b.timestamp}</td>
-            <td class="py-2.5 px-4 font-bold text-white whitespace-nowrap">${b.batch_id}</td>
-            <td class="py-2.5 px-4 text-slate-300">${b.material}</td>
-            <td class="py-2.5 px-4 text-slate-300">${b.weight_kg} kg</td>
-            <td class="py-2.5 px-4 text-amber-300 font-semibold">${b.shape || "Barren"}</td>
-            <td class="py-2.5 px-4">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">
-                <i class="fa-solid ${isPassed ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${b.quality}
-              </span>
-            </td>
-            <td class="py-2.5 px-4 text-slate-400 text-[11px]">${b.warehouse_status}</td>
-            <td class="py-2.5 px-4 text-right">
-              <button onclick="openJsonModal(${idx})" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700">
-                JSON
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join("");
+      visible.forEach(x => {
+        const tr = document.createElement('tr');
+
+        // Charge (batch_id)
+        const tdId = document.createElement('td');
+        tdId.style.fontWeight = '700';
+        tdId.style.color = '#edf1e9';
+        tdId.textContent = x.batch_id;
+        tr.append(tdId);
+
+        // Material
+        const tdMat = document.createElement('td');
+        tdMat.textContent = x.material || '—';
+        tr.append(tdMat);
+
+        // Gewicht
+        const tdWeight = document.createElement('td');
+        tdWeight.textContent = num.format(x.weight_kg) + ' kg';
+        tr.append(tdWeight);
+
+        // Form (shape)
+        const tdShape = document.createElement('td');
+        tdShape.style.color = 'var(--amber)';
+        tdShape.style.fontWeight = '600';
+        tdShape.textContent = x.shape || 'Barren';
+        tr.append(tdShape);
+
+        // Qualität
+        const tdQual = document.createElement('td');
+        const badge = document.createElement('span');
+        const isPassed = x.quality === 'PASSED';
+        badge.className = 'badge' + (isPassed ? '' : ' bad');
+        badge.textContent = isPassed ? '● Bestanden' : '● Zurückgewiesen';
+        tdQual.append(badge);
+        tr.append(tdQual);
+
+        // Lager-Status
+        const tdWh = document.createElement('td');
+        tdWh.style.fontSize = '11px';
+        tdWh.style.color = 'var(--muted)';
+        tdWh.textContent = x.warehouse_status || '—';
+        tr.append(tdWh);
+
+        // Zeitpunkt
+        const tdTime = document.createElement('td');
+        tdTime.style.color = 'var(--muted)';
+        tdTime.style.fontSize = '11px';
+        tdTime.textContent = x.timestamp ? (x.timestamp.split(' ')[1] || x.timestamp) : '—';
+        tr.append(tdTime);
+
+        // Aktion: JSON
+        const tdAction = document.createElement('td');
+        const btnJson = document.createElement('button');
+        btnJson.className = 'btn-cell-json';
+        btnJson.textContent = 'JSON';
+        btnJson.onclick = () => openJsonModal(x);
+        tdAction.append(btnJson);
+        tr.append(tdAction);
+
+        tbody.append(tr);
+      });
     }
 
+    // Filter Buttons
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeFilter = btn.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
+        renderRows();
+      });
+    });
+
+    $('search').addEventListener('input', renderRows);
+
+    // Test Batch Submission
     async function submitTestBatch(e) {
       e.preventDefault();
-      const btn = document.getElementById("btn-submit-test");
-      const statusBox = document.getElementById("sim-status");
+      const btn = $('btn-submit-test');
+      const feedback = $('sim-feedback');
 
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Gieße & prüfe...</span>`;
-      statusBox.classList.remove("hidden");
-      statusBox.innerHTML = `<span class="text-orange-400"><i class="fa-solid fa-fire-burner animate-bounce mr-1"></i> Metall wird in Barrenform gegossen und auf Qualität geprüft...</span>`;
+      btn.textContent = 'Gieße und prüfe …';
+      feedback.className = 'sim-feedback';
 
       const payload = {
-        batch_id: document.getElementById("input-batch-id").value.trim(),
-        material: document.getElementById("input-material").value,
-        weight_kg: parseFloat(document.getElementById("input-weight").value),
-        status: "liquid",
-        temp_celsius: parseFloat(document.getElementById("input-temp").value)
+        batch_id: $('input-batch-id').value.trim(),
+        material: $('input-material').value,
+        weight_kg: parseFloat($('input-weight').value),
+        status: 'liquid',
+        temp_celsius: parseFloat($('input-temp').value)
       };
 
       try {
-        const res = await fetch("/api/test-batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/test-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
         const data = await res.json();
-        const isPassed = data.quality === "PASSED";
+        const isPassed = data.quality === 'PASSED';
 
-        statusBox.innerHTML = `
-          <div class="font-bold ${isPassed ? 'text-emerald-400' : 'text-rose-400'} flex items-center space-x-1.5">
-            <i class="fa-solid ${isPassed ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-            <span>Ergebnis: ${data.quality}</span>
-          </div>
-          <div class="text-slate-300 mt-1">Lager: ${data.warehouse_status}</div>
-          <div class="mt-1 font-mono text-[10px] text-slate-400 bg-slate-900 p-2 rounded overflow-x-auto">
-            ${JSON.stringify(data.data, null, 2)}
-          </div>
-        `;
+        feedback.className = 'sim-feedback visible ' + (isPassed ? 'pass' : 'reject');
+        feedback.innerHTML = `<strong>${isPassed ? '✓ PASSED' : '✕ REJECTED'}</strong> — ${payload.batch_id} gegossen.<br>Lager: ${data.warehouse_status}`;
 
-        document.getElementById("input-batch-id").value = generateRandomBatchId();
+        toast(`Charge ${payload.batch_id}: ${data.quality}`);
+        $('input-batch-id').value = generateRandomBatchId();
         fetchData();
       } catch (err) {
-        statusBox.innerHTML = `<span class="text-rose-400">Fehler beim Ausführen: ${err}</span>`;
+        feedback.className = 'sim-feedback visible reject';
+        feedback.textContent = 'Fehler beim Gießen: ' + err.message;
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-hammer"></i><span>Gießen & Prüfen auslösen</span>`;
+        btn.textContent = '⚒ Gießen & Prüfen auslösen';
       }
+    }
+
+    // Modal Control: Config
+    function openConfigModal() {
+      $('config-modal').classList.add('open');
+    }
+    function closeConfigModal() {
+      $('config-modal').classList.remove('open');
     }
 
     async function saveConfig(e) {
       e.preventDefault();
       const payload = {
-        pass_probability: parseFloat(document.getElementById("cfg-pass-prob").value) / 100,
-        warehouse_url: document.getElementById("cfg-warehouse-url").value.trim(),
-        simulate_delay_sec: parseFloat(document.getElementById("cfg-delay-sec").value),
-        forward_rejected: document.getElementById("cfg-forward-rejected").checked
+        pass_probability: parseFloat($('cfg-pass-prob').value) / 100,
+        warehouse_url: $('cfg-warehouse-url').value.trim(),
+        simulate_delay_sec: parseFloat($('cfg-delay-sec').value),
+        forward_rejected: $('cfg-forward-rejected').checked
       };
 
       try {
-        const res = await fetch("/api/config", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
           closeConfigModal();
+          toast('Einstellungen erfolgreich gespeichert.');
           fetchData();
+        } else {
+          throw new Error('Speichern fehlgeschlagen.');
         }
       } catch (err) {
-        alert("Fehler beim Speichern der Konfiguration: " + err);
+        alert('Fehler: ' + err.message);
       }
     }
 
-    async function resetStats() {
-      if (!confirm("Möchtest du Zähler und Historie wirklich zurücksetzen?")) return;
-      await fetch("/api/reset-stats", { method: "POST" });
-      fetchData();
+    // Modal Control: JSON Detail
+    function openJsonModal(record) {
+      $('json-modal-title').textContent = `Batch ${record.batch_id} (${record.quality})`;
+      $('json-modal-out').textContent = JSON.stringify(record.raw_output || record, null, 2);
+      $('json-modal-in').textContent = JSON.stringify(record.raw_input || {}, null, 2);
+      $('json-modal').classList.add('open');
     }
-
-    function openConfigModal() {
-      document.getElementById("config-modal").classList.remove("hidden");
-    }
-
-    function closeConfigModal() {
-      document.getElementById("config-modal").classList.add("hidden");
-    }
-
-    function openJsonModal(index) {
-      const b = globalBatches[index];
-      if (!b) return;
-      document.getElementById("json-modal-title").innerHTML = `<i class="fa-solid fa-code text-orange-400 mr-2"></i> Batch ${b.batch_id} (${b.quality})`;
-      document.getElementById("json-modal-output").innerText = JSON.stringify(b.raw_output, null, 2);
-      document.getElementById("json-modal-input").innerText = JSON.stringify(b.raw_input, null, 2);
-      document.getElementById("json-modal").classList.remove("hidden");
-    }
-
     function closeJsonModal() {
-      document.getElementById("json-modal").classList.add("hidden");
+      $('json-modal').classList.remove('open');
     }
 
-    // Einmaliges Laden beim Öffnen der Seite (KEIN Dauer-Polling mehr!)
+    // Reset History
+    async function resetStats() {
+      if (!confirm('Möchtest du Zähler und Historie wirklich leeren?')) return;
+      try {
+        await fetch('/api/reset-stats', { method: 'POST' });
+        toast('Historie wurde zurückgesetzt.');
+        fetchData();
+      } catch (err) {
+        alert('Fehler beim Zurücksetzen: ' + err.message);
+      }
+    }
+
+    // Initial Load
     fetchData();
   </script>
 </body>
