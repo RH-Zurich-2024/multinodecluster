@@ -35,7 +35,7 @@ spec:
               value: "8000"
             # Ziel-URL des Warehouse-Services im Cluster
             - name: WAREHOUSE_URL
-              value: "http://warehouse:81/inventory"
+              value: "http://warehouse:8000/inventory"
             # 60 % PASSED, 40 % REJECTED (erhoehter Ausschuss)
             - name: PASS_PROBABILITY
               value: "0.60"
