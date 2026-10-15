@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: melting
+  labels:
+    app: melting
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: melting
+  template:
+    metadata:
+      labels:
+        app: melting
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: melting
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: melting
+          image: reder76/melting-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8003
+              name: http
+          env:
+            # Ziel-URL des Casting Service im Cluster. 'casting-service' ist der
+            # ClusterIP-Alias aus kubernetes/casting.yaml und loest per DNS direkt
+            # auf die Cast-Pods auf - unabhaengig von deren IP.
+            - name: CASTING_SERVICE_URL
+              value: "http://casting-service:80/cast"
+            # Simulierte Schmelzdauer. Niedrig gesetzt, damit Smoke-Tests
+            # nicht Sekunden pro Request warten muessen.
+            - name: SMELT_DURATION_SECONDS
+              value: "3"
+            - name: MELT_TEMPERATURE_CELSIUS
+              value: "1450"
+            - name: CASTING_TIMEOUT_SECONDS
+              value: "10"
+            - name: LOG_LEVEL
+              value: "INFO"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+# NodePort: erlaubt cluster-internen Zugriff und Tests von aussen ueber
+# http://<NODE-IP>:30050/smelt
+apiVersion: v1
+kind: Service
+metadata:
+  name: melting
+  labels:
+    app: melting
+spec:
+  type: NodePort
+  selector:
+    app: melting
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8003
+      nodePort: 30050
+      protocol: TCP
+---
+# Alias Service 'melting-service', falls Clients http://melting-service/... nutzen
+apiVersion: v1
+kind: Service
+metadata:
+  name: melting-service
+  labels:
+    app: melting
+spec:
+  type: ClusterIP
+  selector:
+    app: melting
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8003
+      protocol: TCP
