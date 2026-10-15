@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: delivery
 spec:
-  replicas: 4
+  replicas: 3
   selector:
     matchLabels:
       app: delivery
@@ -39,7 +39,5 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+      nodePort: 30010
       protocol: TCP
-
-
-

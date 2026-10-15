@@ -59,3 +59,17 @@ spec:
       targetPort: 8000
       protocol: TCP
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery-service
+spec:
+  type: NodePort
+  selector:
+    app: delivery
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30020
+      protocol: TCP
