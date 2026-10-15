@@ -63,11 +63,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: delivery-service
+  name: warehouse-service
 spec:
   type: NodePort
   selector:
-    app: delivery
+    app: warehouse
   ports:
     - port: 8000
       targetPort: 8000
